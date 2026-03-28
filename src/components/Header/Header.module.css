@@ -1,0 +1,12 @@
+.container{
+  height: 1000px;
+  background-color: aliceblue;
+}
+
+.navigationBlock{
+  background-color: aqua;
+}
+
+.logo {
+  width: 100px;
+}
