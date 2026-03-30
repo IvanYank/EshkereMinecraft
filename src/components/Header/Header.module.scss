@@ -1,0 +1,48 @@
+.container {
+  padding: 24px 0;
+  // margin-bottom: 20px;
+  background-color: $primary-color;
+}
+
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.navigationBlock {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo {
+  max-height: 80px;
+}
+
+.link {
+  color: $text-color;
+  background-color: transparent;
+  border: none;
+  text-decoration: none;
+  position: relative;
+  cursor: pointer;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0%;
+    height: 1px;
+    background-color: $text-color;
+    transition: width $transition-duration ease;
+  }
+
+  &:hover::after {
+    width: 100%;
+  }
+}

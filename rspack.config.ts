@@ -1,6 +1,7 @@
 import { defineConfig } from '@rspack/cli';
 import { rspack, type SwcLoaderOptions } from '@rspack/core';
 import { ReactRefreshRspackPlugin } from '@rspack/plugin-react-refresh';
+import path from "path";
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -16,12 +17,19 @@ export default defineConfig({
   },
   resolve: {
     extensions: ['...', '.ts', '.tsx', '.jsx'],
+    alias: {
+      "@": path.resolve(__dirname, "src")
+    }
   },
   module: {
     rules: [
       {
         test: /\.svg$/,
         type: 'asset',
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg)$/i,
+        type: "asset/resource"
       },
       {
         test: /\.(jsx?|tsx?)$/,
@@ -48,7 +56,7 @@ export default defineConfig({
         ],
       },
       {
-        test: /\.module\.css$/,
+        test: /\.module\.scss$/,
         use: [
           'style-loader',
           {
@@ -57,18 +65,42 @@ export default defineConfig({
               modules: true,
             },
           },
+          {
+            loader: "sass-loader",
+            options: {
+              additionalData: `@use "@/styles/variables" as *;`
+            }
+          }
+        ],
+      },
+      {
+        test: /\.scss$/,
+        exclude: /\.module\.scss$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: "sass-loader",
+            options: {
+              additionalData: `@use "@/styles/variables" as *;`
+            }
+          }
         ],
       },
       {
         test: /\.css$/,
-        exclude: /\.module\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: [
+          'style-loader',
+          'css-loader',
+        ],
       },
     ],
   },
   plugins: [
     new rspack.HtmlRspackPlugin({
+      title: "minecraft",
       template: './index.html',
+      favicon: "./public/react.svg"
     }),
     isDev ? new ReactRefreshRspackPlugin() : null,
   ],
@@ -79,8 +111,5 @@ export default defineConfig({
         minimizerOptions: { targets },
       }),
     ],
-  },
-  // experiments: {
-  //   css: true,
-  // }
+  }
 });

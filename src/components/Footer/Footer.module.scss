@@ -1,0 +1,17 @@
+.container{
+  background-color: $primary-color;
+  padding: 24px 0;
+}
+
+.content{
+  display: flex;
+  justify-content: space-between;
+  max-width: 1480px;
+  padding: 0 20px;
+  margin: 0 auto;
+}
+
+.leftBlock,.rightBlock{
+  font-size: 14px;
+  color: $text-color;
+}

@@ -1,7 +1,9 @@
+import styles from './Page404.module.scss'
+
 export default function Page404() {
   return (
-    <>
-      Error 404
-    </>
+    <div className={styles.container}>
+      Упс... Страница не найдена
+    </div>
   );
 }
