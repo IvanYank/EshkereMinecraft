@@ -6,13 +6,13 @@ class Event(models.Model):
         max_length=200, 
         verbose_name="Название"
     )
-    
+
     # Поле для описания (может быть длинным текстом)
     description = models.TextField(
         verbose_name="Описание",
         blank=True,  # Делает поле необязательным для заполнения
     )
-    
+
     # Поле для загрузки изображения
     # upload_to='events/' — картинки будут сохраняться в папку media/events/
     image = models.ImageField(
@@ -21,13 +21,13 @@ class Event(models.Model):
         blank=True,
         null=True,  # Разрешает NULL в базе данных (если картинка не загружена)
     )
-    
+
     # Дополнительные полезные поля (опционально)
     created_at = models.DateTimeField(
         auto_now_add=True,  # Автоматически проставится при создании
         verbose_name="Дата создания"
     )
-    
+
     updated_at = models.DateTimeField(
         auto_now=True,  # Будет обновляться при каждом сохранении
         verbose_name="Дата обновления"
