@@ -2,7 +2,7 @@
   "name": "minecraft-app",
   "private": true,
   "version": "1.0.0",
-  "homepage": "https://github.com/IvanYank/EshkereMinecraft",
+  "homepage": "https://ivanyank.github.io/EshkereMinecraft",
   "scripts": {
     "dev": "rspack dev",
     "build": "rspack build",
