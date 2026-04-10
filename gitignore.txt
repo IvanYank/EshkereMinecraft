@@ -130,3 +130,19 @@ dmypy.json
 
 # .idea
 .idea
+
+# Docker
+.env
+*.log
+
+# Python
+__pycache__/
+*.pyc
+venv/
+static/
+media/
+
+# Node
+node_modules/
+dist/
+build/
