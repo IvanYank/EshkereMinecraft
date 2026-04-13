@@ -1,0 +1,34 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+{{ block.super }}
+{{ form.media }}
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form method="post">
+        {% csrf_token %}
+        <fieldset class="module aligned">
+            <h2>Генерация токенов</h2>
+            <div class="form-row">
+                {{ form.count.label_tag }}
+                {{ form.count }}
+                {{ form.count.errors }}
+                <div class="help">{{ form.count.help_text }}</div>
+            </div>
+            <div class="form-row">
+                {{ form.owner.label_tag }}
+                {{ form.owner }}
+                {{ form.owner.errors }}
+                <div class="help">{{ form.owner.help_text }}</div>
+            </div>
+        </fieldset>
+        <div class="submit-row">
+            <input type="submit" value="Сгенерировать" class="default">
+            <a href="{% url 'admin:users_token_changelist' %}" class="button cancel-link">Отмена</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
