@@ -54,6 +54,11 @@ docker exec -it yea_backend python manage.py createsuperuser
 Фронтенд - http://localhost
 Админка Django - http://localhost/admin/
 
+## Документация
+http://localhost/swagger/
+http://localhost/redoc/
+
+
 ### Примечания
 API доступен только для запросов с фронтенда (проверка по Referer)
 Админка доступна публично

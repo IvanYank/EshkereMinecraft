@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block content %}
+<div id="content-main">
+    <fieldset class="module aligned">
+        <h2>Сгенерировано {{ count }} токенов</h2>
+        
+        {% if owner %}
+            <p><strong>Владелец:</strong> {{ owner }} (VIP)</p>
+        {% endif %}
+        
+        <div style="margin: 20px 0;">
+            <button onclick="copyAllTokens()" class="button" style="margin-bottom: 10px;">Скопировать все</button>
+            <a href="{% url 'admin:users_token_changelist' %}" class="button">Вернуться к списку</a>
+            <a href="{% url 'admin:generate_tokens' %}" class="button">Сгенерировать ещё</a>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 4px; max-height: 400px; overflow-y: auto;">
+            <textarea id="tokensTextarea" readonly style="width: 100%; height: 200px; font-family: monospace; font-size: 14px; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">{% for token in tokens %}{{ token }}
+{% endfor %}</textarea>
+        </div>
+        
+        <h3 style="margin-top: 20px;">Список токенов:</h3>
+        <ol style="font-family: monospace; font-size: 14px; line-height: 1.8;">
+            {% for token in tokens %}
+                <li><code>{{ token }}</code></li>
+            {% endfor %}
+        </ol>
+    </fieldset>
+</div>
+
+<script>
+function copyAllTokens() {
+    var textarea = document.getElementById('tokensTextarea');
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    alert('Токены скопированы в буфер обмена!');
+}
+</script>
+{% endblock %}
