@@ -7,10 +7,13 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .authme import change_authme_password
+
 from .authme import check_authme_user_exists, create_authme_user
 from .jwt import get_tokens_for_user, get_user_from_token
 from .models import SiteUser
 from .serializers import (
+    ChangePasswordSerializer,
     LoginSerializer,
     RegisterSerializer,
     SiteUserSerializer,
@@ -178,3 +181,43 @@ class SiteUserViewSet(viewsets.ModelViewSet):
             )
 
         return Response(self.get_serializer(user).data)
+
+    @action(detail=False, methods=['post'])
+    def change_password(self, request):
+        header = request.headers.get('Authorization', '')
+        if not header.startswith('Bearer '):
+            return Response(
+                {'error': 'Token required'},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        user = get_user_from_token(header[7:])
+        if not user:
+            return Response(
+                {'error': 'Invalid token'},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        serializer = ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if not user.check_password(serializer.validated_data['old_password']):
+            return Response(
+                {'error': 'Неверный текущий пароль'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        new_password = serializer.validated_data['new_password']
+
+        # Меняем пароль в Django
+        user.set_password(new_password)
+        user.save()
+
+        # Меняем пароль в AuthMe
+        if not change_authme_password(user.nickname, new_password):
+            return Response(
+                {'error': 'Ошибка смены пароля на сервере'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response({'message': 'Пароль изменён'})
