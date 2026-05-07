@@ -34,6 +34,7 @@ declare module '*.module.sss' {
   export default classes;
 }
 
+declare module 'swiper/css*';
 // CSS
 declare module '*.css' {
   /**
