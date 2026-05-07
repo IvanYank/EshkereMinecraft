@@ -1,12 +1,12 @@
-import styles from "./Slide.module.scss"
+import styles from "./MembersSlide.module.scss"
 
 type SlideProps = {
   title?: string;
   imageUrl: string;
-  text: string
+  text: string;
 }
 
-export default function Slide({ title, imageUrl, text}: SlideProps) {
+export default function MembersSlide({ title, imageUrl, text }: SlideProps) {
   return (
     <div className={styles.container}>
       <div className={styles.textBlock}>
@@ -18,7 +18,7 @@ export default function Slide({ title, imageUrl, text}: SlideProps) {
         </div>
       </div>
       <div className={styles.image}>
-        <img src={imageUrl} alt="Slide" />
+        <img src={imageUrl} alt="avatar" />
       </div>
     </div>
   );

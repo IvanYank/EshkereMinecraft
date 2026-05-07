@@ -2,7 +2,11 @@
   "name": "minecraft-app",
   "private": true,
   "version": "1.0.0",
-  "homepage": "https://github.com/IvanYank/EshkereMinecraft",
+  "homepage": "https://ivanyank.github.io/EshkereMinecraft",
+  "sideEffects": [
+    "*.css",
+    "*.scss"
+  ],
   "scripts": {
     "dev": "rspack dev",
     "build": "rspack build",
@@ -11,6 +15,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "classnames": "^2.5.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router": "^7.13.1",

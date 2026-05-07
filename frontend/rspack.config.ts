@@ -11,6 +11,15 @@ const targets = ['last 2 versions', '> 0.2%', 'not dead', 'Firefox ESR'];
 export default defineConfig({
   devServer: {
     historyApiFallback: true,
+    port: 3000,
+    proxy: [
+      {
+        context: ['/api'],
+        target: 'http://localhost',
+        changeOrigin: true,
+        secure: false,
+      },
+    ],
   },
   entry: {
     main: './src/main.tsx',
@@ -62,7 +71,12 @@ export default defineConfig({
           {
             loader: 'css-loader',
             options: {
-              modules: true,
+              modules: {
+                localIdentName:
+                  process.env.NODE_ENV === "development"
+                    ? "[name]__[local]"
+                    : "[hash:base64:6]",
+              },
             },
           },
           {
