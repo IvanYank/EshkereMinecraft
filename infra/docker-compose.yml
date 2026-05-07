@@ -57,7 +57,7 @@ services:
     networks:
       - yea_network
 
-    gateway:
+  gateway:
     build:
       context: ../gateway
       dockerfile: Dockerfile
