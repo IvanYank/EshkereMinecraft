@@ -1,28 +1,13 @@
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import classNames from "classnames";
 
 import avatar from "@/assets/avatar.jpg"
 import logo from "@/assets/logo.svg"
 
+import { loginFormProps, registerFormProps, personData } from "./types";
 import styles from "./Header.module.scss"
-import { useEffect, useRef, useState } from "react";
 
-type loginFormProps = {
-  nickname: string,
-  password: string
-}
-
-type registerFormProps = {
-  nickname: string,
-  token: string,
-  password: string,
-  passwordSecond: string,
-}
-
-type personData = {
-  nickname: string,
-  avatar?: string
-}
 
 const initalStateLogin = {
   nickname: "",
@@ -38,6 +23,12 @@ const initalStateReg = {
 
 export default function Header() {
   const navigate = useNavigate();
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsOpen((prev) => !prev);
+  };
 
   const [isLoading, setIsLoading] = useState(true)
   const [isAuth, setIsAuth] = useState(false);
@@ -194,7 +185,10 @@ export default function Header() {
         <Link className={styles.logo} to="/">
           <img src={logo} alt="Header's logo" className={styles.logoImage} />
         </Link>
-        <nav className={styles.navigation}>
+        <nav className={classNames(styles.navigation, {
+          [styles.navigationActive]: isOpen
+        })
+        }>
           <ul className={styles.navigationList}>
             <li className={styles.navigationElement}>
               <button
@@ -317,6 +311,20 @@ export default function Header() {
             <button className={styles.formSubmit} type="submit">Отправить</button>
           </form>
         </dialog>
+        <button
+          type="button"
+          className={classNames(
+            styles.burger,
+            {
+              [styles.burgerActive]: isOpen
+            }
+          )}
+          onClick={toggleMenu}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
       </div>
     </div>
   );

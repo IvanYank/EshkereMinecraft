@@ -4,6 +4,8 @@
   align-items: center;
   gap: 20px;
   height: 100%;
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 .title {
@@ -11,7 +13,9 @@
   font-size: 22px;
   font-weight: 400;
   margin-bottom: 18px;
-  // font-family: $font-family-secondary;
+  max-height: 27px;
+  overflow: hidden;
+  text-align: center;
 }
 
 .text {
@@ -20,16 +24,27 @@
   font-weight: 300;
   font-family: $font-family-secondary;
   text-align: center;
+  max-height: 100px;
+  overflow: hidden;
 }
 
 .image {
   width: 137px;
   height: 137px;
+  flex-shrink: 0;
 
   & img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
+  }
+}
+
+@media(max-width: 510px){
+  .container{
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    padding: 0 0 18px;
   }
 }

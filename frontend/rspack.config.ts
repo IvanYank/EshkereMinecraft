@@ -15,7 +15,7 @@ export default defineConfig({
     proxy: [
       {
         context: ['/api'],
-        target: 'http://localhost',
+        target: 'https://cubethrone.fun',
         changeOrigin: true,
         secure: false,
       },
@@ -125,5 +125,8 @@ export default defineConfig({
         minimizerOptions: { targets },
       }),
     ],
+    splitChunks: {
+      chunks: 'all'
+    }
   }
 });

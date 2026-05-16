@@ -38,6 +38,7 @@
 
   :global(.swiper-slide) {
     text-align: center;
+    overflow: hidden;
   }
 
   :global(.swiper-pagination-bullet) {
@@ -118,10 +119,85 @@
   }
 
   &Text {
-    font-size: 32px;
     padding: 56px 72px;
     background-color: $primary-color;
     border-radius: 70px;
+  }
+
+  &Content {
     text-align: center;
+    font-size: 32px;
+    height: 100%;
+    max-height: 342px;
+    overflow: hidden;
+  }
+}
+
+@media(max-width: 1260px) {
+  .activity {
+    &Text {
+      padding: 44px 52px;
+    }
+
+    &Content {
+      font-size: 24px;
+      max-height: 232px;
+    }
+  }
+}
+
+@media(max-width:910px) {
+  .description {
+    &Title {
+      font-size: 26px;
+    }
+
+    &Text {
+      font-size: 18px;
+    }
+  }
+
+  .members {
+    &Title {
+      font-size: 26px;
+    }
+
+    &List {
+      padding: 34px 26px;
+    }
+  }
+
+  .activityTitle {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 780px) {
+  .activity {
+    flex-direction: column;
+    gap: 30px;
+
+    &Block {
+      width: auto;
+    }
+
+    &Text {
+      padding: 22px 38px;
+    }
+
+    &Content {
+      font-size: 22px;
+      max-height: 162px;
+    }
+  }
+}
+
+@media(max-width: 510px) {
+  .slider :global(.swiper) {
+    height: 520px;
+  }
+
+  .membersList :global(.swiper) {
+    height: 320px;
   }
 }
