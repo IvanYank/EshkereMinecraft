@@ -12,12 +12,17 @@ export default defineConfig({
   devServer: {
     historyApiFallback: true,
     port: 3000,
+
     proxy: [
       {
-        context: ['/api'],
-        target: 'https://cubethrone.fun',
+        context: ["/api"],
+        target: "https://cubethrone.fun",
         changeOrigin: true,
         secure: false,
+
+        headers: {
+          Referer: "https://cubethrone.fun/",
+        },
       },
     ],
   },

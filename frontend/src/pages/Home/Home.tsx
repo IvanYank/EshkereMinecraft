@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
+
 import { Pagination, Autoplay } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css/navigation';
@@ -12,52 +13,50 @@ import Slide from '@/components/Slide';
 import avatar from "@/assets/avatar.jpg"
 import slideImage from "@/assets/slide.png"
 
+import { Event, News, SlideUser, User } from './types';
 import styles from "./Home.module.scss"
-
-type Event = {
-  id: number,
-  title: string,
-  description: string,
-  created_at: string,
-  updated_at: string,
-  image: string,
-}
 
 
 export default function Home() {
+  const location = useLocation();
+
+  const [vipUsers, setVipUsers] = useState<SlideUser[]>([
+    {
+      avatar: avatar,
+      nickname: "Ник"
+    },
+    {
+      avatar: avatar,
+      nickname: "Ник"
+    },
+    {
+      avatar: avatar,
+      nickname: "Ник"
+    },
+  ])
+
   const [events, setEvents] = useState<Event[]>([{
     id: 0,
-    title: '',
-    description: '',
+    title: 'Новое событие',
+    description: 'Это очень крутое и интересное событие, которые случилось в этом мире. Думаю всем следует знать об этом',
     created_at: '',
     updated_at: '',
     image: ''
   }])
 
-  const location = useLocation();
-
-  //   const mainSliderText = [
-  //     `Осады крепостей, полевые битвы и борьба за контроль над провинциями — здесь каждая схватка меняет баланс сил. Сражайся за свои земли, захватывай новые территории и отбивай атаки врагов. Тактика, координация и умение держать удар решают исход войны. Твоя держава растёт с каждой победой.`,
-  //     `Выберите одну из четырёх профессий:
-  // ⚔️ Воин — идите в бой, захватывайте территории
-  // 🔨 Ремесленник — снабжайте армию оружием и провиантом
-  // 🏗 Строитель — возводите неприступные крепости и красивые города
-  // ⛏️ Шахтёр — добывайте ресурсы в глубинах мира
-
-  // Каждая профессия — это уникальные механики и свой вклад в победу!`,
-  //     `Политика — это не только войны! Создавай тайные союзы, веди хитрую торговлю и плети заговоры против соседей. Сегодня ты союзник, а завтра — коварный предатель с ножом в спине (буквально)`,
-  //     `Ты всё ещё здесь? Серьёзно? Пока ты читаешь этот текст, другие игроки уже захватывают территории, строят империи и становятся легендами!`,
-  //   ]
-
-  // const text = "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Iste ad itaque quod repellendus delectus doloremque, quae quibusdam earum eveniet eaque quisquam exercitationem possimus sapiente in voluptatem laborum aliquam, soluta mollitia. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Iste ad itaque quod repellendus delectus doloremque, quae quibusdam earum eveniet eaque quisquam exercitationem possimus sapiente in voluptatem laborum aliquam, soluta mollitia. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Iste ad itaque quod repellendus delectus doloremque, quae quibusdam earum eveniet eaque quisquam exercitationem possimus sapiente in voluptatem laborum aliquam, soluta mollitia"
+  const [news, setNews] = useState<News[]>([{
+    id: 0,
+    title: 'Новая новость',
+    text: 'Это самая важная новость в важей жизни. Читайте, расскажите о ней всем своим друзьям и знакомым',
+    created_at: '',
+    image: ''
+  }])
 
   const description = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti voluptatibus quasi alias veniam iste fuga. Magnam modi, corporis eum deleniti expedita nobis ducimus commodi architecto quam repellendus atque ut. Iure.
 
   Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti voluptatibus quasi alias veniam iste fuga. Magnam modi, corporis eum deleniti expedita nobis ducimus commodi architecto quam repellendus atque ut. Iure.
 
   Lorem ipsum dolor sit amet consectetur adipisicing elit. Corrupti voluptatibus quasi alias veniam iste fuga. Magnam modi, corporis eum deleniti expedita nobis ducimus commodi architecto quam repellendus atque ut. Iure.`
-
-  // const slides = [slide, slide, slide, slide]
 
   const mainSliderSlides = [
     {
@@ -85,11 +84,54 @@ export default function Home() {
   ]
 
   const getEvents = async () => {
-    const response = await fetch("/api/events")
+    const response = await fetch("/api/events/")
 
     if (response.ok) {
       const output = await response.json()
+
       setEvents(output.results)
+    }
+  }
+
+  const getNews = async () => {
+    const response = await fetch("/api/news/")
+
+    if (response.ok) {
+      const output = await response.json()
+      
+      setNews(output.results)
+    }
+  }
+
+  const getSlidesPerView = () => {
+    if (window.innerWidth > 1440) return 3;
+    if (window.innerWidth > 910) return 2;
+    return 1;
+  };
+
+  const getUsers = async () => {
+    const response = await fetch("/api/users/")
+
+    if (response.ok) {
+      const out = await response.json()
+
+      let users = out.results
+        .filter((user: User) => user.vip_status)
+        .map((user: User) => ({
+          avatar: user.avatar ?? avatar,
+          nickname: user.nickname
+        }))
+
+      const count = (getSlidesPerView() - (users.length % getSlidesPerView())) % getSlidesPerView();
+
+      for (let i = 0; i < count; i++) {
+        users.push({
+          avatar: avatar,
+          nickname: "Серьёзный никнейм"
+        })
+      }
+
+      setVipUsers(users)
     }
   }
 
@@ -106,6 +148,8 @@ export default function Home() {
 
   useEffect(() => {
     getEvents()
+    getNews()
+    getUsers()
   }, [])
 
   return (
@@ -153,7 +197,7 @@ export default function Home() {
               pagination={{
                 type: 'progressbar',
               }}
-              // autoplay
+              autoplay
               breakpoints={{
                 910: {
                   slidesPerView: 2,
@@ -166,10 +210,10 @@ export default function Home() {
               }}
             >
               {
-                [1, 2, 3, 4].map(_ => {
+                vipUsers.map(user => {
                   return (
                     <SwiperSlide>
-                      <MembersSlide title={"Серьёзный никнейм"} imageUrl={avatar} text={"Чем знаменит?\nА знаменит многим!"} />
+                      <MembersSlide title={user.nickname} imageUrl={user.avatar} text={"Чем знаменит?\nА знаменит многим!"} />
                     </SwiperSlide>
                   )
                 })
@@ -182,7 +226,7 @@ export default function Home() {
             <h2 className={styles.activityTitle}>Новости</h2>
             <div className={styles.activityText}>
               <div className={styles.activityContent}>
-                Ох, вы не поверите случилась беда.Да беда не малая, такое случилось, вы себе представить не сможете. Вам лучше прочитать и всё сразу поймёте
+                {news[0]?.text}
               </div>
             </div>
           </article>

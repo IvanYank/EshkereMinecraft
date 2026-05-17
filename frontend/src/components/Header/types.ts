@@ -1,16 +1,11 @@
-export type loginFormProps = {
-  nickname: string,
-  password: string
-}
-
-export type registerFormProps = {
+export type FormData = {
   nickname: string,
   token: string,
   password: string,
   passwordSecond: string,
 }
 
-export type personData = {
+export type PersonData = {
   nickname: string,
   avatar?: string
 }

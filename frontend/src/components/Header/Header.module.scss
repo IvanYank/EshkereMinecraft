@@ -174,31 +174,31 @@
     margin-bottom: 36px;
   }
 
-  &Block {
-    margin-bottom: 14px;
+  // &Block {
+  //   margin-bottom: 14px;
 
-    &Title {
-      font-weight: 500;
-      font-size: 14px;
-      margin-bottom: 5px;
-    }
+  //   &Title {
+  //     font-weight: 500;
+  //     font-size: 14px;
+  //     margin-bottom: 5px;
+  //   }
 
-    &Input {
-      background-color: rgba(#323232, 0.27);
-      border: 3px solid #5B5B5B;
-      border-radius: 10px;
-      height: 43px;
-      width: 100%;
-      padding: 8px 12px;
-      font-size: 14px;
-      width: 280px;
-      outline: none;
-    }
+  //   &Input {
+  //     background-color: rgba(#323232, 0.27);
+  //     border: 3px solid #5B5B5B;
+  //     border-radius: 10px;
+  //     height: 43px;
+  //     width: 100%;
+  //     padding: 8px 12px;
+  //     font-size: 14px;
+  //     width: 280px;
+  //     outline: none;
+  //   }
 
-    &:last-of-type {
-      margin-bottom: 34px;
-    }
-  }
+  //   &:last-of-type {
+  //     margin-bottom: 34px;
+  //   }
+  // }
 
   &Submit {
     background-color: $twitch-button-color;

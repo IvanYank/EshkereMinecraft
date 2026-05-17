@@ -5,49 +5,42 @@ import classNames from "classnames";
 import avatar from "@/assets/avatar.jpg"
 import logo from "@/assets/logo.svg"
 
-import { loginFormProps, registerFormProps, personData } from "./types";
+import { FormData, PersonData } from "./types";
+import FormInput from "../FormInput";
+
 import styles from "./Header.module.scss"
 
 
-const initalStateLogin = {
-  nickname: "",
-  password: ""
-}
-
-const initalStateReg = {
+const formInitialState = {
   nickname: "",
   password: "",
   token: "",
   passwordSecond: ""
 }
 
+const errorListInitialState = {
+  nickname: "",
+  token: "",
+  password: "",
+  passwordSecond: ""
+}
+
 export default function Header() {
   const navigate = useNavigate();
+  const dialogRef = useRef<HTMLDialogElement | null>(null);
 
+  const [isAuth, setIsAuth] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsOpen((prev) => !prev);
-  };
+  const [dialogType, setDialogType] = useState<"login" | "reg">("login")
+  const [formData, setFormData] = useState<FormData>(formInitialState)
 
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAuth, setIsAuth] = useState(false);
-  const [personData, setPersonData] = useState<personData>({
+  const [personData, setPersonData] = useState<PersonData>({
     nickname: "Steve",
     avatar: undefined
   })
 
-  const loginRef = useRef<HTMLDialogElement | null>(null);
-  const regRef = useRef<HTMLDialogElement | null>(null);
-
-  const [loginform, setLoginForm] = useState<loginFormProps>(initalStateLogin)
-  const [regForm, setRegForm] = useState<registerFormProps>(initalStateReg)
-
-  const openLogin = () => loginRef.current?.showModal();
-  const closeLogin = () => loginRef.current?.close();
-
-  const openReg = () => regRef.current?.showModal();
-  const closeReg = () => regRef.current?.close();
+  const [errorList, setErrorList] = useState(errorListInitialState)
 
   const handleClick = (url: string) => {
     const el = document.getElementById(url);
@@ -59,74 +52,81 @@ export default function Header() {
     }
   };
 
-  const loginInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLoginForm((prev) => ({
+
+  const openLogin = () => {
+    setDialogType("login")
+    dialogRef.current?.showModal()
+  };
+
+  const openReg = () => {
+    setDialogType("reg")
+    dialogRef.current?.showModal()
+  };
+
+  const closeReg = () => {
+    setErrorList(errorListInitialState)
+    dialogRef.current?.close()
+  };
+
+  const formDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value
     }))
   }
 
-  const regInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRegForm((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
-  }
-
-  const submitHandlerLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submitHandler = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const response = await fetch("api/users/login/", {
-      headers: {
-        "Content-type": "Application/json"
-      },
-      method: "POST",
-      body: JSON.stringify(loginform),
-      credentials: "include"
-    })
+    try {
+      let body;
+      let url = "";
 
-    console.log(response)
+      if (dialogType === "login") {
+        const { passwordSecond, token, ...rest } = formData
 
-    if (response.ok) {
-      const json = await response.json()
+        url = "api/users/login/"
+        body = rest
+      } else if (dialogType === "reg") {
+        const { passwordSecond, ...rest } = formData
 
-      setPersonData({
-        nickname: json.user.nickname,
-        avatar: json.user.avatar
-      })
+        url = "api/users/register/"
+        body = rest
+      }
 
-      localStorage.setItem("accessToken", json.access)
-      setIsAuth(true)
-      closeLogin()
-    }
-  }
+      if (validate()) {
+        const response = await fetch(url, {
+          headers: {
+            "Content-type": "Application/json"
+          },
+          method: "POST",
+          body: JSON.stringify(body)
+        })
 
-  const submitHandlerReg = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+        const json = await response.json()
 
-    const { passwordSecond, ...body } = regForm
+        if (response.ok) {
+          setPersonData({
+            nickname: json.user.nickname,
+            avatar: json.user.avatar
+          })
 
-    const response = await fetch("api/users/register/", {
-      headers: {
-        "Content-type": "Application/json"
-      },
-      method: "POST",
-      body: JSON.stringify(body)
-    })
+          localStorage.setItem("accessToken", json.access)
+          setIsAuth(true)
+          closeReg()
+        } else {
+          console.log(json)
 
-    console.log(response)
-
-    if (response.ok) {
-      const json = await response.json()
-
-      setPersonData({
-        nickname: json.user.nickname,
-        avatar: json.user.avatar
-      })
-
-      localStorage.setItem("accessToken", json.access)
-      setIsAuth(true)
-      closeReg()
+          for (const key in json) {
+            setErrorList(prev => ({
+              ...prev,
+              [key]: json[key]
+            }))
+          }
+        }
+      }
+    } catch (e) {
+      console.error(e)
     }
   }
 
@@ -143,12 +143,42 @@ export default function Header() {
     }
   }
 
-  const closeLoginDialog = () => {
-    setLoginForm(initalStateLogin)
-  }
+  const validate = () => {
+    let errorStatus = true
 
-  const closeRegDialog = () => {
-    setRegForm(initalStateReg)
+    setErrorList(errorListInitialState)
+
+    for (const key in formData) {
+      const typedKey = key as keyof FormData
+
+      if (formData[typedKey].length == 0) {
+        errorStatus = false
+        setErrorList(prev => ({
+          ...prev,
+          [key]: "Поле должно быть заполнено"
+        }))
+      }
+    }
+
+    if (formData.password.length < 6) {
+      errorStatus = false
+      setErrorList(prev => ({
+        ...prev,
+        password: "Пароль меньше 6 символов"
+      }))
+    }
+
+    if (formData.password !== formData.passwordSecond) {
+      errorStatus = false
+      console.log(errorList)
+
+      setErrorList(prev => ({
+        ...prev,
+        passwordSecond: "Пароли не совпадают"
+      }))
+    }
+
+    return errorStatus
   }
 
   useEffect(() => {
@@ -170,7 +200,7 @@ export default function Header() {
 
           setPersonData({
             nickname: data.nickname,
-            avatar: data.avatar.replace("http://localhost", "")
+            avatar: data.avatar
           })
 
           setIsAuth(true)
@@ -185,9 +215,7 @@ export default function Header() {
         <Link className={styles.logo} to="/">
           <img src={logo} alt="Header's logo" className={styles.logoImage} />
         </Link>
-        <nav className={classNames(styles.navigation, {
-          [styles.navigationActive]: isOpen
-        })
+        <nav className={classNames(styles.navigation, { [styles.navigationActive]: isOpen })
         }>
           <ul className={styles.navigationList}>
             <li className={styles.navigationElement}>
@@ -237,89 +265,83 @@ export default function Header() {
             </div>
           )
         }
-        <dialog className={styles.dialog} ref={loginRef} onClose={closeLoginDialog}>
-          <form onSubmit={submitHandlerLogin} className={styles.form}>
-            <button className={styles.formClose} type="button" onClick={closeLogin}></button>
-            <h2 className={styles.formTitle}>Авторизация</h2>
-            <label className={styles.formBlock}>
-              <div className={styles.formBlockTitle}>Никнейм</div>
-              <input
-                className={styles.formBlockInput}
-                type="text"
-                name='nickname'
-                value={loginform.nickname}
-                onChange={loginInputChange}
-              />
-            </label>
-            <label className={styles.formBlock}>
-              <div className={styles.formBlockTitle}>Пароль</div>
-              <input
-                className={styles.formBlockInput}
-                type="password"
-                name='password'
-                value={loginform.password}
-                onChange={loginInputChange}
-              />
-            </label>
-            <button className={styles.formSubmit} type="submit">Отправить</button>
-          </form>
-        </dialog>
-        <dialog className={styles.dialog} ref={regRef} onClose={closeRegDialog}>
-          <form onSubmit={submitHandlerReg} className={styles.form}>
+        <dialog className={styles.dialog} ref={dialogRef} onClose={() => setFormData(formInitialState)}>
+          <form onSubmit={submitHandler} className={styles.form}>
             <button className={styles.formClose} type="button" onClick={closeReg}></button>
-            <h2 className={styles.formTitle}>Регистрация</h2>
-            <label className={styles.formBlock}>
-              <div className={styles.formBlockTitle}>Никнейм</div>
-              <input
-                className={styles.formBlockInput}
-                type="text"
-                name='nickname'
-                value={regForm.nickname}
-                onChange={regInputChange}
-              />
-            </label>
-            <label className={styles.formBlock}>
-              <div className={styles.formBlockTitle}>Токен</div>
-              <input
-                className={styles.formBlockInput}
-                type="text"
-                name='token'
-                value={regForm.token}
-                onChange={regInputChange}
-              />
-            </label>
-            <label className={styles.formBlock}>
-              <div className={styles.formBlockTitle}>Пароль</div>
-              <input
-                className={styles.formBlockInput}
-                type="password"
-                name='password'
-                value={regForm.password}
-                onChange={regInputChange}
-              />
-            </label>
-            <label className={styles.formBlock}>
-              <div className={styles.formBlockTitle}>Повторный пароль</div>
-              <input
-                className={styles.formBlockInput}
-                type="password"
-                name='passwordSecond'
-                value={regForm.passwordSecond}
-                onChange={regInputChange}
-              />
-            </label>
+            {
+              dialogType === "login" && (
+                <>
+                  <h2 className={styles.formTitle}>Авторизация</h2>
+                  <FormInput
+                    title={"Никнейм"}
+                    type={"text"}
+                    name={"nickname"}
+                    value={formData.nickname}
+                    errorText={errorList.nickname}
+                    onChange={formDataChange}
+                  />
+                  <FormInput
+                    title={"Пароль"}
+                    type={"password"}
+                    name={"password"}
+                    value={formData.password}
+                    errorText={errorList.password}
+                    onChange={formDataChange}
+                  />
+                </>
+              )
+            }
+            {
+              dialogType === "reg" && (
+                <>
+                  <h2 className={styles.formTitle}>Регистрация</h2>
+                  <FormInput
+                    title={"Никнейм"}
+                    type={"text"}
+                    name={"nickname"}
+                    value={formData.nickname}
+                    errorText={errorList.nickname}
+                    onChange={formDataChange}
+                  />
+                  <FormInput
+                    title={"Токен"}
+                    type={"text"}
+                    name={"token"}
+                    value={formData.token}
+                    errorText={errorList.token}
+                    onChange={formDataChange}
+                  />
+                  <FormInput
+                    title={"Пароль"}
+                    type={"password"}
+                    name={"password"}
+                    value={formData.password}
+                    errorText={errorList.password}
+                    onChange={formDataChange}
+                  />
+                  <FormInput
+                    title={"Повторный пароль"}
+                    type={"password"}
+                    name={"passwordSecond"}
+                    value={formData.passwordSecond}
+                    errorText={errorList.passwordSecond}
+                    onChange={formDataChange}
+                  />
+                </>
+              )
+            }
             <button className={styles.formSubmit} type="submit">Отправить</button>
           </form>
         </dialog>
         <button
-          type="button"
           className={classNames(
             styles.burger,
             {
               [styles.burgerActive]: isOpen
             }
           )}
-          onClick={toggleMenu}
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
         >
           <span />
           <span />
