@@ -64,9 +64,11 @@ services:
     container_name: yea_gateway
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - static_volume:/app/static
       - media_volume:/app/media
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
       - frontend

@@ -13,10 +13,9 @@ load_dotenv(BASE_DIR.parent / 'infra' / '.env')
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-n+=_b!ebce_xkbi$vy9ysduddxebaz^l2w7+@ysq@!%_dqnvbs'
-
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-key')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
@@ -156,7 +155,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
@@ -170,3 +169,6 @@ AUTHME_USER = os.getenv('AUTHME_USER', '')
 AUTHME_PASSWORD = os.getenv('AUTHME_PASSWORD', '')
 AUTHME_DATABASE = os.getenv('AUTHME_DATABASE', 'minecraft')
 AUTHME_TABLE = os.getenv('AUTHME_TABLE', 'authme')
+
+CSRF_TRUSTED_ORIGINS = ['https://cubethrone.fun', 'https://www.cubethrone.fun']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
