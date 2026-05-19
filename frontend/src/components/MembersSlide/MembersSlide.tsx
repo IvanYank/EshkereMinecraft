@@ -1,12 +1,14 @@
+import classNames from "classnames";
 import styles from "./MembersSlide.module.scss"
 
 type SlideProps = {
+  id?: number,
   title?: string;
-  imageUrl: string;
+  imageUrl?: string;
   text: string;
 }
 
-export default function MembersSlide({ title, imageUrl, text }: SlideProps) {
+export default function MembersSlide({ id, title, imageUrl, text }: SlideProps) {
   return (
     <div className={styles.container}>
       <div className={styles.textBlock}>
@@ -18,7 +20,15 @@ export default function MembersSlide({ title, imageUrl, text }: SlideProps) {
         </div>
       </div>
       <div className={styles.image}>
-        <img src={imageUrl} alt="avatar" />
+        {
+          imageUrl
+            ? <img src={imageUrl} alt="Аватар участника" />
+            : <div className={classNames(
+              styles.imagePlaceholder,
+              styles[`imagePlaceholder${id}`],
+            )}>
+            </div>
+        }
       </div>
     </div>
   );

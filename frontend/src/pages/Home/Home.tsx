@@ -10,8 +10,8 @@ import 'swiper/css';
 import MembersSlide from '@/components/MembersSlide';
 import Slide from '@/components/Slide';
 
-import avatar from "@/assets/avatar.jpg"
-import slideImage from "@/assets/slide.png"
+import avatar from "@/assets/avatar.svg"
+import slideImage from "@/assets/slide.webp"
 
 import { Event, News, SlideUser, User } from './types';
 import styles from "./Home.module.scss"
@@ -22,16 +22,19 @@ export default function Home() {
 
   const [vipUsers, setVipUsers] = useState<SlideUser[]>([
     {
-      avatar: avatar,
-      nickname: "Ник"
+      id: 0,
+      avatar: undefined,
+      nickname: "Серьёзный никнейм"
     },
     {
-      avatar: avatar,
-      nickname: "Ник"
+      id: 1,
+      avatar: undefined,
+      nickname: "Серьёзный никнейм"
     },
     {
-      avatar: avatar,
-      nickname: "Ник"
+      id: 2,
+      avatar: undefined,
+      nickname: "Серьёзный никнейм"
     },
   ])
 
@@ -98,7 +101,7 @@ export default function Home() {
 
     if (response.ok) {
       const output = await response.json()
-      
+
       setNews(output.results)
     }
   }
@@ -122,11 +125,13 @@ export default function Home() {
           nickname: user.nickname
         }))
 
-      const count = (getSlidesPerView() - (users.length % getSlidesPerView())) % getSlidesPerView();
+      const slidesPerView = getSlidesPerView()
+      const count = (slidesPerView - (users.length % slidesPerView)) % slidesPerView;
 
       for (let i = 0; i < count; i++) {
         users.push({
-          avatar: avatar,
+          id: i + (slidesPerView - count),
+          avatar: undefined,
           nickname: "Серьёзный никнейм"
         })
       }
@@ -213,7 +218,7 @@ export default function Home() {
                 vipUsers.map(user => {
                   return (
                     <SwiperSlide>
-                      <MembersSlide title={user.nickname} imageUrl={user.avatar} text={"Чем знаменит?\nА знаменит многим!"} />
+                      <MembersSlide id={user.id} title={user.nickname} imageUrl={user.avatar} text={"Чем знаменит?\nА знаменит многим!"} />
                     </SwiperSlide>
                   )
                 })

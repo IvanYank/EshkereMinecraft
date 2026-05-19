@@ -2,27 +2,29 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import classNames from "classnames";
 
-import avatar from "@/assets/avatar.jpg"
-import logo from "@/assets/logo.svg"
+import logo from "@/assets/logo.webp"
 
 import { FormData, PersonData } from "./types";
 import FormInput from "../FormInput";
 
 import styles from "./Header.module.scss"
 
-
 const formInitialState = {
   nickname: "",
   password: "",
   token: "",
-  passwordSecond: ""
+  passwordSecond: "",
+  old_password: "",
+  new_password: ""
 }
 
 const errorListInitialState = {
   nickname: "",
   token: "",
   password: "",
-  passwordSecond: ""
+  passwordSecond: "",
+  old_password: "",
+  new_password: ""
 }
 
 export default function Header() {
@@ -30,13 +32,14 @@ export default function Header() {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const [isAuth, setIsAuth] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  const [dialogType, setDialogType] = useState<"login" | "reg">("login")
+  const [dialogType, setDialogType] = useState<"login" | "reg" | "settings">("login")
   const [formData, setFormData] = useState<FormData>(formInitialState)
 
   const [personData, setPersonData] = useState<PersonData>({
-    nickname: "Steve",
+    nickname: "Серьёзный никнейм",
     avatar: undefined
   })
 
@@ -52,7 +55,6 @@ export default function Header() {
     }
   };
 
-
   const openLogin = () => {
     setDialogType("login")
     dialogRef.current?.showModal()
@@ -60,6 +62,11 @@ export default function Header() {
 
   const openReg = () => {
     setDialogType("reg")
+    dialogRef.current?.showModal()
+  };
+
+  const openSettings = () => {
+    setDialogType("settings")
     dialogRef.current?.showModal()
   };
 
@@ -79,6 +86,7 @@ export default function Header() {
     e.preventDefault()
 
     try {
+      let headers;
       let body;
       let url = "";
 
@@ -86,19 +94,43 @@ export default function Header() {
         const { passwordSecond, token, ...rest } = formData
 
         url = "api/users/login/"
+
+        headers = {
+          "Content-type": "Application/json",
+        }
+
         body = rest
       } else if (dialogType === "reg") {
         const { passwordSecond, ...rest } = formData
 
         url = "api/users/register/"
+
+        headers = {
+          "Content-type": "Application/json",
+        }
+
         body = rest
+      }
+      else if (dialogType === "settings") {
+        const { old_password, new_password } = formData
+        const accessToken = localStorage.getItem("accessToken")
+
+        url = "api/users/change_password/"
+
+        headers = {
+          "Content-type": "Application/json",
+          "Authorization": `Bearer ${accessToken}`,
+        }
+
+        body = {
+          old_password,
+          new_password
+        }
       }
 
       if (validate()) {
         const response = await fetch(url, {
-          headers: {
-            "Content-type": "Application/json"
-          },
+          headers: headers,
           method: "POST",
           body: JSON.stringify(body)
         })
@@ -106,21 +138,39 @@ export default function Header() {
         const json = await response.json()
 
         if (response.ok) {
-          setPersonData({
-            nickname: json.user.nickname,
-            avatar: json.user.avatar
-          })
+          switch (dialogType) {
+            case "settings":
 
-          localStorage.setItem("accessToken", json.access)
-          setIsAuth(true)
+              break;
+            case "login":
+            case "reg":
+              setPersonData({
+                nickname: json.user.nickname,
+                avatar: json.user.avatar
+              })
+
+              localStorage.setItem("accessToken", json.access)
+              setIsAuth(true)
+
+              break;
+          }
+
           closeReg()
         } else {
-          console.log(json)
-
           for (const key in json) {
             setErrorList(prev => ({
               ...prev,
               [key]: json[key]
+            }))
+          }
+
+          if (json.error) {
+            setErrorList(prev => ({
+              ...prev,
+              nickname: json.error,
+              password: json.error,
+              old_password: json.error,
+              new_password: json.error,
             }))
           }
         }
@@ -131,82 +181,156 @@ export default function Header() {
   }
 
   const logoutHandler = async () => {
-    const response = await fetch("api/users/logout/", {
-      headers: {
-        "Content-type": "Application/json"
-      },
-      method: "POST",
-    })
+    try {
+      const response = await fetch("api/users/logout/", {
+        method: "POST",
+      })
 
-    if (response.ok) {
+      if (response.ok) {
+        setIsAuth(false)
+        localStorage.removeItem("accessToken")
+      }
+    } catch (e) {
+      console.error(e)
+
       setIsAuth(false)
+      localStorage.removeItem("accessToken")
     }
   }
 
   const validate = () => {
-    let errorStatus = true
-
     setErrorList(errorListInitialState)
 
-    for (const key in formData) {
-      const typedKey = key as keyof FormData
+    let errorStatus = true
 
-      if (formData[typedKey].length == 0) {
-        errorStatus = false
-        setErrorList(prev => ({
-          ...prev,
-          [key]: "Поле должно быть заполнено"
-        }))
-      }
+    switch (dialogType) {
+      case "login":
+      case "reg":
+        if (formData.password.length < 6) {
+          errorStatus = false
+          setErrorList(prev => ({
+            ...prev,
+            password: "Пароль меньше 6 символов"
+          }))
+        }
+
+        if (formData.nickname.length == 0) {
+          errorStatus = false
+          setErrorList(prev => ({
+            ...prev,
+            nickname: "Поле должно быть заполнено"
+          }))
+        }
+
+        if (formData.password !== formData.passwordSecond) {
+          errorStatus = false
+
+          setErrorList(prev => ({
+            ...prev,
+            passwordSecond: "Пароли не совпадают"
+          }))
+        }
+
+        if (formData.passwordSecond.length == 0) {
+          errorStatus = false
+          setErrorList(prev => ({
+            ...prev,
+            passwordSecond: "Поле должно быть заполнено"
+          }))
+        }
+
+        if (formData.token.length == 0) {
+          errorStatus = false
+          setErrorList(prev => ({
+            ...prev,
+            token: "Поле должно быть заполнено"
+          }))
+        }
+
+        break;
+
+      case "settings":
+        if (formData.old_password.length < 6) {
+          errorStatus = false
+          setErrorList(prev => ({
+            ...prev,
+            old_password: "Пароль меньше 6 символов"
+          }))
+        }
+
+        if (formData.new_password.length < 6) {
+          errorStatus = false
+          setErrorList(prev => ({
+            ...prev,
+            new_password: "Пароль меньше 6 символов"
+          }))
+        }
+
+        break;
     }
 
-    if (formData.password.length < 6) {
-      errorStatus = false
-      setErrorList(prev => ({
-        ...prev,
-        password: "Пароль меньше 6 символов"
-      }))
-    }
-
-    if (formData.password !== formData.passwordSecond) {
-      errorStatus = false
-      console.log(errorList)
-
-      setErrorList(prev => ({
-        ...prev,
-        passwordSecond: "Пароли не совпадают"
-      }))
-    }
+    console.log(errorList)
 
     return errorStatus
   }
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken")
+  const getMe = async (accessToken: string) => {
+    return fetch("/api/users/me/", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+  }
 
-    if (token) {
-      (async () => {
-        const response = await fetch("api/users/me/", {
-          headers: {
-            "Content-type": "Application/json",
-            "Authorization": `Bearer ${token}`,
-          }
-        })
+  const checkAuth = async () => {
+    let token = localStorage.getItem("accessToken")
 
-        console.log(response)
-
-        if (response.ok) {
-          const data = await response.json()
-
-          setPersonData({
-            nickname: data.nickname,
-            avatar: data.avatar
-          })
-
-          setIsAuth(true)
-        }
-      })()
+    if (!token) {
+      setIsAuth(false)
+      return
     }
+
+    setIsAuthLoading(true)
+
+    let response = await getMe(token)
+
+    if (response.status === 403) {
+      const refreshResponse = await fetch("/api/users/refresh/", {
+        method: "POST",
+      })
+
+      if (!refreshResponse.ok) {
+        localStorage.removeItem("accessToken")
+        setIsAuth(false)
+        setIsAuthLoading(false)
+        return
+      }
+
+      const refreshData = await refreshResponse.json()
+
+      localStorage.setItem("accessToken", refreshData.access)
+      response = await getMe(refreshData.access)
+    }
+
+    if (!response.ok) {
+      setIsAuth(false)
+      setIsAuthLoading(false)
+      return
+    }
+
+    const data = await response.json()
+
+    setPersonData({
+      nickname: data.nickname,
+      avatar: data.avatar,
+    })
+
+    setIsAuth(true)
+    setIsAuthLoading(false)
+  }
+
+  useEffect(() => {
+    checkAuth()
   }, [])
 
   return (
@@ -241,7 +365,7 @@ export default function Header() {
             </li>
           </ul>
         </nav>
-        {!isAuth
+        {(!isAuthLoading && !isAuth)
           ? (
             <div className={styles.auth}>
               <button type="button" onClick={openLogin} className={styles.authButton}>Войти</button>
@@ -252,16 +376,25 @@ export default function Header() {
             <div className={styles.person}>
               <span className={styles.personNickname}>{personData.nickname}</span>
               <button type="button" popoverTarget="person-popover" className={styles.personAvatar}>
-                <img src={personData.avatar ? `http://localhost${personData.avatar}` : avatar} alt="Аватар" />
+                {
+                  personData.avatar
+                    ? <img src={personData.avatar} alt="Аватар пользователя" />
+                    : <div className={styles.personAvatarPlaceholder}></div>
+                }
               </button>
-              <div id="person-popover" popover="auto" className={styles.personPopover}>
-                <button type="button" style={{ textDecoration: "line-through" }}>
-                  Настройки
-                </button>
-                <button type="button" onClick={logoutHandler}>
-                  Выйти
-                </button>
-              </div>
+              {
+                !isAuthLoading &&
+                (
+                  <div id="person-popover" popover="auto" className={styles.personPopover}>
+                    <button type="button" onClick={openSettings}>
+                      Настройки
+                    </button>
+                    <button type="button" onClick={logoutHandler}>
+                      Выйти
+                    </button>
+                  </div>
+                )
+              }
             </div>
           )
         }
@@ -325,6 +458,29 @@ export default function Header() {
                     name={"passwordSecond"}
                     value={formData.passwordSecond}
                     errorText={errorList.passwordSecond}
+                    onChange={formDataChange}
+                  />
+                </>
+              )
+            }
+            {
+              dialogType === "settings" && (
+                <>
+                  <h2 className={styles.formTitle}>Настройки</h2>
+                  <FormInput
+                    title={"Старый пароль"}
+                    type={"password"}
+                    name={"old_password"}
+                    value={formData.old_password}
+                    errorText={errorList.old_password}
+                    onChange={formDataChange}
+                  />
+                  <FormInput
+                    title={"Новый пароль"}
+                    type={"password"}
+                    name={"new_password"}
+                    value={formData.new_password}
+                    errorText={errorList.new_password}
                     onChange={formDataChange}
                   />
                 </>

@@ -24,6 +24,7 @@ export type User = {
 }
 
 export type SlideUser = {
-  avatar: string,
+  id?: number,
+  avatar?: string,
   nickname: string,
 }

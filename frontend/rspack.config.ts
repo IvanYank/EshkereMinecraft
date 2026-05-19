@@ -1,6 +1,7 @@
 import { defineConfig } from '@rspack/cli';
 import { rspack, type SwcLoaderOptions } from '@rspack/core';
 import { ReactRefreshRspackPlugin } from '@rspack/plugin-react-refresh';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import path from "path";
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -42,7 +43,7 @@ export default defineConfig({
         type: 'asset',
       },
       {
-        test: /\.(png|jpe?g|gif|svg)$/i,
+        test: /\.(png|jpe?g|gif|svg|webp)$/i,
         type: "asset/resource"
       },
       {
@@ -125,6 +126,7 @@ export default defineConfig({
   ],
   optimization: {
     minimizer: [
+      // new BundleAnalyzerPlugin(),
       new rspack.SwcJsMinimizerRspackPlugin(),
       new rspack.LightningCssMinimizerRspackPlugin({
         minimizerOptions: { targets },

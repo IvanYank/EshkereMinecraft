@@ -12,6 +12,7 @@
 }
 
 .logo {
+  display: flex;
   margin-right: 20px;
 }
 
@@ -62,10 +63,19 @@
     background-color: #53535F;
     margin: 0 8px 0 0;
     font-weight: 600;
+    transition: background-color $transition-duration;
+
+    &:hover {
+      background-color: #44444f;
+    }
 
     &Registry {
-      background-color: $twitch-button-color;
+      background-color: #9147FF;
       margin: 0;
+
+      &:hover {
+        background-color: #781dff;
+      }
     }
   }
 }
@@ -77,6 +87,8 @@
 
   &Nickname {
     font-size: 21px;
+    max-width: 327px;
+    overflow: hidden;
   }
 
   &Avatar {
@@ -85,6 +97,33 @@
     border-radius: 50%;
     overflow: hidden;
     anchor-name: --avatar;
+
+    &Placeholder {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: #BA3F3F;
+      position: relative;
+
+      &::after {
+        content: "";
+
+        position: absolute;
+        inset: 0;
+
+        background-color: rgba(255, 255, 255, 0.4);
+
+        mask-image: url("@/assets/avatar.svg");
+        mask-repeat: no-repeat;
+        mask-position: center;
+        mask-size: 55px 55px;
+
+        -webkit-mask-image: url("@/assets/avatar.svg");
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        -webkit-mask-size: 55px 55px;
+      }
+    }
 
     img {
       width: 100%;
@@ -100,6 +139,7 @@
     translate: -50% 0;
     margin-top: 6px;
     flex-direction: column;
+    align-items: center;
     padding: 12px;
     background-color: #53535F;
     border: none;
@@ -107,7 +147,25 @@
     gap: 4px;
 
     button {
+      position: relative;
       font-size: 18px;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background-color: white;
+        transition: transform $transition-duration ease;
+        transform-origin: 0;
+        transform: scaleX(0);
+      }
+
+      &:hover::after {
+        transform: scaleX(1);
+      }
     }
 
     &:popover-open {
@@ -154,6 +212,7 @@
       display: block;
       transform-origin: 0;
       position: absolute;
+      transition: background-color $transition-duration;
     }
 
     &::before {
@@ -167,6 +226,11 @@
       left: 0;
       transform: rotate(-45deg);
     }
+
+    &:hover::after,
+    &:hover::before {
+      background-color: #393939;
+    }
   }
 
   &Title {
@@ -174,45 +238,25 @@
     margin-bottom: 36px;
   }
 
-  // &Block {
-  //   margin-bottom: 14px;
-
-  //   &Title {
-  //     font-weight: 500;
-  //     font-size: 14px;
-  //     margin-bottom: 5px;
-  //   }
-
-  //   &Input {
-  //     background-color: rgba(#323232, 0.27);
-  //     border: 3px solid #5B5B5B;
-  //     border-radius: 10px;
-  //     height: 43px;
-  //     width: 100%;
-  //     padding: 8px 12px;
-  //     font-size: 14px;
-  //     width: 280px;
-  //     outline: none;
-  //   }
-
-  //   &:last-of-type {
-  //     margin-bottom: 34px;
-  //   }
-  // }
-
   &Submit {
-    background-color: $twitch-button-color;
+    background-color: #9147FF;
     border-radius: 14px;
     padding: 7px 60px;
     font-weight: 600;
     font-size: 14px;
     text-align: center;
+    transition: background-color $transition-duration;
+
+    &:hover {
+      background-color: #781dff;
+    }
   }
 }
 
 .burger {
   width: 32px;
   height: 24px;
+  margin-left: 20px;
 
   display: none;
   flex-direction: column;
@@ -253,6 +297,12 @@
   }
 }
 
+@media(max-width: 1200px) {
+  .personNickname {
+    max-width: 151px;
+  }
+}
+
 @media(max-width:910px) {
   .container {
     padding: 8px 0;
@@ -269,6 +319,20 @@
 
   .navigationElement {
     margin: 0 10px 0 0;
+  }
+
+  .person {
+    gap: 16px;
+
+    &Nickname {
+      font-size: 18px;
+      max-width: 97px;
+    }
+
+    &Avatar {
+      height: 55px;
+      width: 55px;
+    }
   }
 
   .dialog {
@@ -305,6 +369,12 @@
 @media (max-width: 780px) {
   .auth {
     margin-right: 20px;
+  }
+
+  .person {
+    &Nickname {
+      max-width: 140px;
+    }
   }
 
   .burger {

@@ -26,6 +26,12 @@
       font-size: 14px;
       width: 280px;
       outline: none;
+      transition: $transition-duration;
+
+      &:hover,
+      &:focus {
+        border-color: #393939;
+      }
     }
 
     &:last-of-type {
