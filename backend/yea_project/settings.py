@@ -155,7 +155,7 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
@@ -169,3 +169,6 @@ AUTHME_USER = os.getenv('AUTHME_USER', '')
 AUTHME_PASSWORD = os.getenv('AUTHME_PASSWORD', '')
 AUTHME_DATABASE = os.getenv('AUTHME_DATABASE', 'minecraft')
 AUTHME_TABLE = os.getenv('AUTHME_TABLE', 'authme')
+
+CSRF_TRUSTED_ORIGINS = ['https://cubethrone.fun', 'https://www.cubethrone.fun']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
