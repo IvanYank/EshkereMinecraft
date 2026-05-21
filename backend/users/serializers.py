@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SiteUser, Token
+from .models import SiteUser, Token, VipUrl
 
 
 class SiteUserSerializer(serializers.ModelSerializer):
@@ -63,3 +63,15 @@ class TokenListSerializer(serializers.ModelSerializer):
         model = Token
         fields = ['id', 'token', 'active', 'created_at', 'used_at', 'used_by']
         read_only_fields = fields
+
+
+class VipUrlSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VipUrl
+        fields = ['id', 'url']
+
+
+class VipUrlCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VipUrl
+        fields = ['url']
