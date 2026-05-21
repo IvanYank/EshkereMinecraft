@@ -11,12 +11,14 @@ from .authme import change_authme_password
 
 from .authme import check_authme_user_exists, create_authme_user
 from .jwt import get_tokens_for_user, get_user_from_token
-from .models import SiteUser
+from .models import SiteUser, Token
 from .serializers import (
+    AvatarSerializer,
     ChangePasswordSerializer,
     LoginSerializer,
     RegisterSerializer,
     SiteUserSerializer,
+    TokenListSerializer,
 )
 
 
@@ -221,3 +223,41 @@ class SiteUserViewSet(viewsets.ModelViewSet):
             )
 
         return Response({'message': 'Пароль изменён'})
+
+    @action(detail=False, methods=['patch'])
+    def avatar(self, request):
+        """Смена аватарки — только для VIP"""
+        header = request.headers.get('Authorization', '')
+        if not header.startswith('Bearer '):
+            return Response({'error': 'Token required'}, status=401)
+
+        user = get_user_from_token(header[7:])
+        if not user:
+            return Response({'error': 'Invalid token'}, status=401)
+
+        if not user.vip_status:
+            return Response({'error': 'Только для VIP'}, status=403)
+
+        serializer = AvatarSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'avatar': user.avatar.url if user.avatar else None})
+
+    @action(detail=False, methods=['get'])
+    def my_tokens(self, request):
+        """Список активных токенов пользователя — только для VIP"""
+        header = request.headers.get('Authorization', '')
+        if not header.startswith('Bearer '):
+            return Response({'error': 'Token required'}, status=401)
+
+        user = get_user_from_token(header[7:])
+        if not user:
+            return Response({'error': 'Invalid token'}, status=401)
+
+        if not user.vip_status:
+            return Response({'error': 'Только для VIP'}, status=403)
+
+        tokens = Token.objects.filter(owner=user, active=True)
+        serializer = TokenListSerializer(tokens, many=True)
+        return Response(serializer.data)
