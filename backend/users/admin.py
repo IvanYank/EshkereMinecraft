@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.urls import path
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import SiteUser, Token
+from .models import SiteUser, Token, VipUrl
 
 
 class GenerateTokensForm(forms.Form):
@@ -15,6 +15,12 @@ class GenerateTokensForm(forms.Form):
         label="Владелец (VIP)",
         help_text="Оставьте пустым, если токен без владельца"
     )
+
+
+class VipUrlInline(admin.TabularInline):
+    model = VipUrl
+    extra = 1
+    fields = ['url']
 
 
 @admin.register(Token)
@@ -116,7 +122,7 @@ class SiteUserAdmin(admin.ModelAdmin):
         ('Информация', {'fields': ('avatar', 'vip_status', 'registered_at')}),
         ('Токен', {'fields': ('registered_with_token',)}),
     )
-    
+    inlines = [VipUrlInline]
     ordering = ['-registered_at']
     
     def has_add_permission(self, request):
