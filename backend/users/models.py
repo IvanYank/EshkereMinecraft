@@ -95,3 +95,21 @@ class Token(models.Model):
         self.used_at = timezone.now()
         self.used_by = user
         self.save()
+
+
+class VipUrl(models.Model):
+    vip = models.ForeignKey(
+        SiteUser,
+        on_delete=models.CASCADE,
+        related_name='vip_urls',
+        limit_choices_to={'vip_status': True},
+        verbose_name="VIP пользователь",
+    )
+    url = models.URLField(verbose_name="URL")
+
+    class Meta:
+        verbose_name = "VIP URL"
+        verbose_name_plural = "VIP URLs"
+
+    def __str__(self):
+        return f"{self.vip.nickname} — {self.url}"
