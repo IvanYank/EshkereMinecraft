@@ -69,6 +69,7 @@ services:
       - static_volume:/app/static
       - media_volume:/app/media
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /opt/data:/app/installer:ro
     depends_on:
       - backend
       - frontend
