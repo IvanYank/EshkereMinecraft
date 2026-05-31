@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SiteUser, Token
+from .models import SiteUser, Token, VipUrl
 
 
 class SiteUserSerializer(serializers.ModelSerializer):
@@ -50,3 +50,28 @@ class LoginSerializer(serializers.Serializer):
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True, min_length=6)
+
+
+class AvatarSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteUser
+        fields = ['avatar']
+
+
+class TokenListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Token
+        fields = ['id', 'token', 'active', 'created_at', 'used_at', 'used_by']
+        read_only_fields = fields
+
+
+class VipUrlSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VipUrl
+        fields = ['id', 'url']
+
+
+class VipUrlCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VipUrl
+        fields = ['url']

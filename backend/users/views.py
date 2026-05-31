@@ -11,12 +11,16 @@ from .authme import change_authme_password
 
 from .authme import check_authme_user_exists, create_authme_user
 from .jwt import get_tokens_for_user, get_user_from_token
-from .models import SiteUser
+from .models import SiteUser, Token, VipUrl
 from .serializers import (
+    AvatarSerializer,
     ChangePasswordSerializer,
     LoginSerializer,
     RegisterSerializer,
     SiteUserSerializer,
+    TokenListSerializer,
+    VipUrlSerializer,
+    VipUrlCreateSerializer,
 )
 
 
@@ -221,3 +225,85 @@ class SiteUserViewSet(viewsets.ModelViewSet):
             )
 
         return Response({'message': 'Пароль изменён'})
+
+    @action(detail=False, methods=['patch'])
+    def avatar(self, request):
+        """Смена аватарки — только для VIP"""
+        header = request.headers.get('Authorization', '')
+        if not header.startswith('Bearer '):
+            return Response({'error': 'Token required'}, status=401)
+
+        user = get_user_from_token(header[7:])
+        if not user:
+            return Response({'error': 'Invalid token'}, status=401)
+
+        if not user.vip_status:
+            return Response({'error': 'Только для VIP'}, status=403)
+
+        serializer = AvatarSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'avatar': user.avatar.url if user.avatar else None})
+
+    @action(detail=False, methods=['get'])
+    def my_tokens(self, request):
+        """Список активных токенов пользователя — только для VIP"""
+        header = request.headers.get('Authorization', '')
+        if not header.startswith('Bearer '):
+            return Response({'error': 'Token required'}, status=401)
+
+        user = get_user_from_token(header[7:])
+        if not user:
+            return Response({'error': 'Invalid token'}, status=401)
+
+        if not user.vip_status:
+            return Response({'error': 'Только для VIP'}, status=403)
+
+        tokens = Token.objects.filter(owner=user, active=True)
+        serializer = TokenListSerializer(tokens, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get', 'post', 'delete'])
+    def vip_urls(self, request):
+        """Управление ссылками VIP"""
+        if request.method == 'GET':
+            vip_id = request.query_params.get('id')
+            if vip_id:
+                try:
+                    vip = SiteUser.objects.get(id=vip_id, vip_status=True)
+                except SiteUser.DoesNotExist:
+                    return Response({'error': 'VIP not found'}, status=404)
+                urls = VipUrl.objects.filter(vip=vip)
+                return Response(
+                    {
+                        'nickname': vip.nickname,
+                        'urls': VipUrlSerializer(urls, many=True).data,
+                    }
+                )
+            else:
+                return Response({'error': 'id required'}, status=400)
+    
+        # POST и DELETE — только для своего профиля
+        header = request.headers.get('Authorization', '')
+        if not header.startswith('Bearer '):
+            return Response({'error': 'Token required'}, status=401)
+    
+        user = get_user_from_token(header[7:])
+        if not user or not user.vip_status:
+            return Response({'error': 'Только для VIP'}, status=403)
+    
+        if request.method == 'POST':
+            serializer = VipUrlCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(vip=user)
+            return Response(serializer.data, status=201)
+    
+        if request.method == 'DELETE':
+            url_id = request.data.get('id')
+            if not url_id:
+                return Response({'error': 'id required'}, status=400)
+            deleted, _ = VipUrl.objects.filter(id=url_id, vip=user).delete()
+            if not deleted:
+                return Response({'error': 'Not found'}, status=404)
+            return Response({'message': 'Deleted'})
