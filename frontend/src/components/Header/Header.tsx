@@ -189,9 +189,9 @@ export default function Header() {
                 !isAuthLoading &&
                 (
                   <div id="person-popover" popover="auto" className={styles.personPopover}>
-                    {/* <button type="button">
+                    <button type="button" onClick={() => { window.location.href = "https://cubethrone.fun/installer/CubeThrone_v6.exe" }}>
                       Лаунчер
-                    </button> */}
+                    </button>
                     {
                       personData.vip &&
                       (
