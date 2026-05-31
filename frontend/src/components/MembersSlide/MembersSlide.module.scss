@@ -8,6 +8,10 @@
   margin: 0 auto;
 }
 
+.textBlock{
+  flex-grow: 1;
+}
+
 .title {
   color: white;
   font-size: 22px;
@@ -18,14 +22,33 @@
   text-align: center;
 }
 
-.text {
+.links {
   color: white;
   font-size: 17px;
   font-weight: 300;
   font-family: $font-family-secondary;
   text-align: center;
-  max-height: 100px;
+  max-height: 120px;
+  padding-bottom: 4px;
   overflow: hidden;
+  flex-grow: 1;
+}
+
+.link{
+  white-space: nowrap;
+  text-align: center;
+  overflow: hidden;
+  margin-bottom: 4px;
+
+  &:last-of-type{
+    margin-bottom: 0;
+  }
+
+  a{
+    line-height: 20px;
+    text-decoration: underline;
+    text-transform: capitalize;
+  }
 }
 
 .image {

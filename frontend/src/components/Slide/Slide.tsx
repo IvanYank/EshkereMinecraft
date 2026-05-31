@@ -1,11 +1,5 @@
 import styles from "./Slide.module.scss"
 
-type SlideProps = {
-  title?: string;
-  imageUrl: string;
-  text: string
-}
-
 export default function Slide({ title, imageUrl, text}: SlideProps) {
   return (
     <div className={styles.container}>
@@ -18,7 +12,7 @@ export default function Slide({ title, imageUrl, text}: SlideProps) {
         </div>
       </div>
       <div className={styles.image}>
-        <img src={imageUrl} alt="Slide" />
+        <img loading="lazy" src={imageUrl} alt="Slide" />
       </div>
     </div>
   );

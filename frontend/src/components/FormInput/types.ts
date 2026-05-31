@@ -1,4 +1,4 @@
-export type Props = {
+type FormInputProps = {
   title: string,
   type: "text" | "password",
   name: string,

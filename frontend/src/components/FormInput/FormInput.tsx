@@ -1,5 +1,4 @@
 import styles from "./FormInput.module.scss"
-import { Props } from "./types";
 
 export default function FormInput({
   title,
@@ -8,7 +7,7 @@ export default function FormInput({
   value,
   errorText,
   onChange
-}: Props) {
+}: FormInputProps) {
   return (
     <label className={styles.formBlock}>
       <div className={styles.formBlockTitle}>{title}</div>

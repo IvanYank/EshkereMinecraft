@@ -12,6 +12,7 @@ const targets = ['last 2 versions', '> 0.2%', 'not dead', 'Firefox ESR'];
 export default defineConfig({
   devServer: {
     historyApiFallback: true,
+    host: '0.0.0.0',
     port: 3000,
 
     proxy: [
@@ -118,9 +119,9 @@ export default defineConfig({
   },
   plugins: [
     new rspack.HtmlRspackPlugin({
-      title: "minecraft",
+      title: "CubeThrone",
       template: './index.html',
-      favicon: "./public/react.svg"
+      favicon: "./public/favicon.webp"
     }),
     isDev ? new ReactRefreshRspackPlugin() : null,
   ],

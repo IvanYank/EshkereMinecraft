@@ -4,28 +4,12 @@ import classNames from "classnames";
 
 import logo from "@/assets/logo.webp"
 
-import { FormData, PersonData } from "./types";
-import FormInput from "../FormInput";
-
+import { ModalType } from "@/types/types";
 import styles from "./Header.module.scss"
 
-const formInitialState = {
-  nickname: "",
-  password: "",
-  token: "",
-  passwordSecond: "",
-  old_password: "",
-  new_password: ""
-}
+// const Dialog = lazy(() => import("../Dialog"))
 
-const errorListInitialState = {
-  nickname: "",
-  token: "",
-  password: "",
-  passwordSecond: "",
-  old_password: "",
-  new_password: ""
-}
+import Dialog from "../Dialog";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -33,17 +17,21 @@ export default function Header() {
 
   const [isAuth, setIsAuth] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const [dialogType, setDialogType] = useState<"login" | "reg" | "settings">("login")
-  const [formData, setFormData] = useState<FormData>(formInitialState)
+  const [dialogType, setDialogType] = useState<ModalType>("Авторизация")
 
-  const [personData, setPersonData] = useState<PersonData>({
+  const [personData, setPersonData] = useState<{
+    nickname: string,
+    avatar: string | undefined,
+    vip: boolean,
+    id: number
+  }>({
     nickname: "Серьёзный никнейм",
-    avatar: undefined
+    avatar: undefined,
+    vip: false,
+    id: 0
   })
-
-  const [errorList, setErrorList] = useState(errorListInitialState)
 
   const handleClick = (url: string) => {
     const el = document.getElementById(url);
@@ -55,129 +43,9 @@ export default function Header() {
     }
   };
 
-  const openLogin = () => {
-    setDialogType("login")
-    dialogRef.current?.showModal()
-  };
-
-  const openReg = () => {
-    setDialogType("reg")
-    dialogRef.current?.showModal()
-  };
-
-  const openSettings = () => {
-    setDialogType("settings")
-    dialogRef.current?.showModal()
-  };
-
-  const closeReg = () => {
-    setErrorList(errorListInitialState)
-    dialogRef.current?.close()
-  };
-
-  const formDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }))
-  }
-
-  const submitHandler = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault()
-
-    try {
-      let headers;
-      let body;
-      let url = "";
-
-      if (dialogType === "login") {
-        const { passwordSecond, token, ...rest } = formData
-
-        url = "api/users/login/"
-
-        headers = {
-          "Content-type": "Application/json",
-        }
-
-        body = rest
-      } else if (dialogType === "reg") {
-        const { passwordSecond, ...rest } = formData
-
-        url = "api/users/register/"
-
-        headers = {
-          "Content-type": "Application/json",
-        }
-
-        body = rest
-      }
-      else if (dialogType === "settings") {
-        const { old_password, new_password } = formData
-        const accessToken = localStorage.getItem("accessToken")
-
-        url = "api/users/change_password/"
-
-        headers = {
-          "Content-type": "Application/json",
-          "Authorization": `Bearer ${accessToken}`,
-        }
-
-        body = {
-          old_password,
-          new_password
-        }
-      }
-
-      if (validate()) {
-        const response = await fetch(url, {
-          headers: headers,
-          method: "POST",
-          body: JSON.stringify(body)
-        })
-
-        const json = await response.json()
-
-        if (response.ok) {
-          switch (dialogType) {
-            case "settings":
-
-              break;
-            case "login":
-            case "reg":
-              setPersonData({
-                nickname: json.user.nickname,
-                avatar: json.user.avatar
-              })
-
-              localStorage.setItem("accessToken", json.access)
-              setIsAuth(true)
-
-              break;
-          }
-
-          closeReg()
-        } else {
-          for (const key in json) {
-            setErrorList(prev => ({
-              ...prev,
-              [key]: json[key]
-            }))
-          }
-
-          if (json.error) {
-            setErrorList(prev => ({
-              ...prev,
-              nickname: json.error,
-              password: json.error,
-              old_password: json.error,
-              new_password: json.error,
-            }))
-          }
-        }
-      }
-    } catch (e) {
-      console.error(e)
-    }
+  const openDialog = (type: ModalType) => {
+    setDialogType(type)
+    dialogRef?.current?.showModal()
   }
 
   const logoutHandler = async () => {
@@ -196,82 +64,6 @@ export default function Header() {
       setIsAuth(false)
       localStorage.removeItem("accessToken")
     }
-  }
-
-  const validate = () => {
-    setErrorList(errorListInitialState)
-
-    let errorStatus = true
-
-    switch (dialogType) {
-      case "login":
-      case "reg":
-        if (formData.password.length < 6) {
-          errorStatus = false
-          setErrorList(prev => ({
-            ...prev,
-            password: "Пароль меньше 6 символов"
-          }))
-        }
-
-        if (formData.nickname.length == 0) {
-          errorStatus = false
-          setErrorList(prev => ({
-            ...prev,
-            nickname: "Поле должно быть заполнено"
-          }))
-        }
-
-        if (formData.password !== formData.passwordSecond) {
-          errorStatus = false
-
-          setErrorList(prev => ({
-            ...prev,
-            passwordSecond: "Пароли не совпадают"
-          }))
-        }
-
-        if (formData.passwordSecond.length == 0) {
-          errorStatus = false
-          setErrorList(prev => ({
-            ...prev,
-            passwordSecond: "Поле должно быть заполнено"
-          }))
-        }
-
-        if (formData.token.length == 0) {
-          errorStatus = false
-          setErrorList(prev => ({
-            ...prev,
-            token: "Поле должно быть заполнено"
-          }))
-        }
-
-        break;
-
-      case "settings":
-        if (formData.old_password.length < 6) {
-          errorStatus = false
-          setErrorList(prev => ({
-            ...prev,
-            old_password: "Пароль меньше 6 символов"
-          }))
-        }
-
-        if (formData.new_password.length < 6) {
-          errorStatus = false
-          setErrorList(prev => ({
-            ...prev,
-            new_password: "Пароль меньше 6 символов"
-          }))
-        }
-
-        break;
-    }
-
-    console.log(errorList)
-
-    return errorStatus
   }
 
   const getMe = async (accessToken: string) => {
@@ -323,6 +115,8 @@ export default function Header() {
     setPersonData({
       nickname: data.nickname,
       avatar: data.avatar,
+      vip: data.vip_status,
+      id: data.id,
     })
 
     setIsAuth(true)
@@ -339,7 +133,7 @@ export default function Header() {
         <Link className={styles.logo} to="/">
           <img src={logo} alt="Header's logo" className={styles.logoImage} />
         </Link>
-        <nav className={classNames(styles.navigation, { [styles.navigationActive]: isOpen })
+        <nav className={classNames(styles.navigation, { [styles.navigationActive]: isMenuOpen })
         }>
           <ul className={styles.navigationList}>
             <li className={styles.navigationElement}>
@@ -348,28 +142,37 @@ export default function Header() {
                 className={styles.link}
                 type="button"
               >
-                Первая ссылка
+                Описание
               </button>
             </li>
             <li className={styles.navigationElement}>
               <button
-                onClick={() => handleClick("description")}
+                onClick={() => handleClick("members")}
                 className={styles.link}
                 type="button"
               >
-                Вторая ссылка
+                Участники
               </button>
             </li>
             <li className={styles.navigationElement}>
-              <Link className={styles.link} to="/map">Интерактивная карта</Link>
+              <button
+                onClick={() => handleClick("events")}
+                className={styles.link}
+                type="button"
+              >
+                События
+              </button>
             </li>
+            {/* <li className={styles.navigationElement}>
+              <Link className={styles.link} to="/map">Карта</Link>
+            </li> */}
           </ul>
         </nav>
         {(!isAuthLoading && !isAuth)
           ? (
             <div className={styles.auth}>
-              <button type="button" onClick={openLogin} className={styles.authButton}>Войти</button>
-              <button type="button" onClick={openReg} className={classNames(styles.authButton, styles.authButtonRegistry)}>Регистрация</button>
+              <button type="button" onClick={() => openDialog("Авторизация")} className={styles.authButton}>Войти</button>
+              <button type="button" onClick={() => openDialog("Регистрация")} className={classNames(styles.authButton, styles.authButtonRegistry)}>Регистрация</button>
             </div>
           )
           : (
@@ -386,7 +189,23 @@ export default function Header() {
                 !isAuthLoading &&
                 (
                   <div id="person-popover" popover="auto" className={styles.personPopover}>
-                    <button type="button" onClick={openSettings}>
+                    {/* <button type="button">
+                      Лаунчер
+                    </button> */}
+                    {
+                      personData.vip &&
+                      (
+                        <>
+                          {/* <button type="button" onClick={() => openDialog("Соцсети")}>
+                            Соцсети
+                          </button> */}
+                          <button type="button" onClick={() => openDialog("Токены")}>
+                            Токены
+                          </button>
+                        </>
+                      )
+                    }
+                    <button type="button" onClick={() => openDialog("Настройки")}>
                       Настройки
                     </button>
                     <button type="button" onClick={logoutHandler}>
@@ -398,106 +217,29 @@ export default function Header() {
             </div>
           )
         }
-        <dialog className={styles.dialog} ref={dialogRef} onClose={() => setFormData(formInitialState)}>
-          <form onSubmit={submitHandler} className={styles.form}>
-            <button className={styles.formClose} type="button" onClick={closeReg}></button>
-            {
-              dialogType === "login" && (
-                <>
-                  <h2 className={styles.formTitle}>Авторизация</h2>
-                  <FormInput
-                    title={"Никнейм"}
-                    type={"text"}
-                    name={"nickname"}
-                    value={formData.nickname}
-                    errorText={errorList.nickname}
-                    onChange={formDataChange}
-                  />
-                  <FormInput
-                    title={"Пароль"}
-                    type={"password"}
-                    name={"password"}
-                    value={formData.password}
-                    errorText={errorList.password}
-                    onChange={formDataChange}
-                  />
-                </>
-              )
-            }
-            {
-              dialogType === "reg" && (
-                <>
-                  <h2 className={styles.formTitle}>Регистрация</h2>
-                  <FormInput
-                    title={"Никнейм"}
-                    type={"text"}
-                    name={"nickname"}
-                    value={formData.nickname}
-                    errorText={errorList.nickname}
-                    onChange={formDataChange}
-                  />
-                  <FormInput
-                    title={"Токен"}
-                    type={"text"}
-                    name={"token"}
-                    value={formData.token}
-                    errorText={errorList.token}
-                    onChange={formDataChange}
-                  />
-                  <FormInput
-                    title={"Пароль"}
-                    type={"password"}
-                    name={"password"}
-                    value={formData.password}
-                    errorText={errorList.password}
-                    onChange={formDataChange}
-                  />
-                  <FormInput
-                    title={"Повторный пароль"}
-                    type={"password"}
-                    name={"passwordSecond"}
-                    value={formData.passwordSecond}
-                    errorText={errorList.passwordSecond}
-                    onChange={formDataChange}
-                  />
-                </>
-              )
-            }
-            {
-              dialogType === "settings" && (
-                <>
-                  <h2 className={styles.formTitle}>Настройки</h2>
-                  <FormInput
-                    title={"Старый пароль"}
-                    type={"password"}
-                    name={"old_password"}
-                    value={formData.old_password}
-                    errorText={errorList.old_password}
-                    onChange={formDataChange}
-                  />
-                  <FormInput
-                    title={"Новый пароль"}
-                    type={"password"}
-                    name={"new_password"}
-                    value={formData.new_password}
-                    errorText={errorList.new_password}
-                    onChange={formDataChange}
-                  />
-                </>
-              )
-            }
-            <button className={styles.formSubmit} type="submit">Отправить</button>
-          </form>
-        </dialog>
+        {/* {
+          isModalOpen && (
+            <Suspense fallback={null}> */}
+        <Dialog
+          dialogType={dialogType}
+          dialogRef={dialogRef}
+          personData={personData}
+          setPersonData={setPersonData}
+          setIsAuth={setIsAuth}
+        // setIsModalOpen={setIsModalOpen}
+        />
+        {/* </Suspense>
+          )
+        } */}
         <button
           className={classNames(
             styles.burger,
             {
-              [styles.burgerActive]: isOpen
+              [styles.burgerActive]: isMenuOpen
             }
           )}
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
+          onClick={() => setIsMenuOpen((prev) => !prev)}
         >
           <span />
           <span />
