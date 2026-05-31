@@ -155,13 +155,11 @@ export default function Header() {
               </button>
             </li>
             <li className={styles.navigationElement}>
-              <button
-                onClick={() => handleClick("events")}
-                className={styles.link}
-                type="button"
-              >
-                События
-              </button>
+             <button type="button"
+className={styles.link}
+ onClick={() => { window.location.href = "https://cubethrone.fun/installer/CubeThrone_v6.exe" }}>
+                      Лаунчер
+                    </button>
             </li>
             {/* <li className={styles.navigationElement}>
               <Link className={styles.link} to="/map">Карта</Link>
