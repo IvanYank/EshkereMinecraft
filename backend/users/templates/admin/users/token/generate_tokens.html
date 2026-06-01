@@ -24,6 +24,11 @@
                 {{ form.owner.errors }}
                 <div class="help">{{ form.owner.help_text }}</div>
             </div>
+            <div class="form-row">
+                {{ form.is_vip.label_tag }}
+                {{ form.is_vip }}
+                {{ form.is_vip.errors }}
+            </div>
         </fieldset>
         <div class="submit-row">
             <input type="submit" value="Сгенерировать" class="default">
