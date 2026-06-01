@@ -1,0 +1,48 @@
+.settingsBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 36px;
+}
+
+.avatar {
+  display: flex;
+  cursor: pointer;
+
+  &Preview {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+  }
+
+  input {
+    display: none;
+  }
+}
+
+.saveAvatar {
+  margin-top: 12px;
+  background-color: #9147FF;
+  border-radius: 14px;
+  padding: 7px 60px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  transition: background-color 0.2s;
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: #5B5B5B;
+  }
+
+  &:not(:disabled):hover {
+    background-color: #781dff;
+  }
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}

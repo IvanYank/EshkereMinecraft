@@ -1,0 +1,62 @@
+  .formBlock {
+    margin-bottom: 6px;
+
+    &Title,
+    &Error {
+      font-weight: 500;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    &Error {
+      min-height: 17px;
+      width: 280px;
+      margin-top: 5px;
+      margin-bottom: 0;
+      color: #dd2323;
+    }
+
+    &Input {
+      background-color: rgba(#323232, 0.27);
+      border: 3px solid #5B5B5B;
+      border-radius: 10px;
+      height: 43px;
+      padding: 8px 12px;
+      font-size: 14px;
+      width: 280px;
+      outline: none;
+      transition: $transition-duration;
+
+      &:hover,
+      &:focus {
+        border-color: #393939;
+      }
+    }
+
+    &:last-of-type {
+      margin-bottom: 0px;
+    }
+  }
+
+  @media(max-width:910px) {
+    .formBlock {
+
+      &Title,
+      &Error {
+        font-size: 12px;
+      }
+
+      &Error {
+        width: 260px;
+      }
+
+      &Input {
+        font-size: 12px;
+        width: 260px;
+      }
+
+      &:last-of-type {
+        margin-bottom: 34px;
+      }
+    }
+  }
