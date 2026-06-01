@@ -1,6 +1,7 @@
 import { defineConfig } from '@rspack/cli';
 import { rspack, type SwcLoaderOptions } from '@rspack/core';
 import { ReactRefreshRspackPlugin } from '@rspack/plugin-react-refresh';
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import path from "path";
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -11,13 +12,19 @@ const targets = ['last 2 versions', '> 0.2%', 'not dead', 'Firefox ESR'];
 export default defineConfig({
   devServer: {
     historyApiFallback: true,
+    host: '0.0.0.0',
     port: 3000,
+
     proxy: [
       {
-        context: ['/api'],
-        target: 'http://localhost',
+        context: ["/api"],
+        target: "https://cubethrone.fun",
         changeOrigin: true,
         secure: false,
+
+        headers: {
+          Referer: "https://cubethrone.fun/",
+        },
       },
     ],
   },
@@ -37,7 +44,7 @@ export default defineConfig({
         type: 'asset',
       },
       {
-        test: /\.(png|jpe?g|gif|svg)$/i,
+        test: /\.(png|jpe?g|gif|svg|webp)$/i,
         type: "asset/resource"
       },
       {
@@ -112,18 +119,22 @@ export default defineConfig({
   },
   plugins: [
     new rspack.HtmlRspackPlugin({
-      title: "minecraft",
+      title: "CubeThrone",
       template: './index.html',
-      favicon: "./public/react.svg"
+      favicon: "./public/favicon.webp"
     }),
     isDev ? new ReactRefreshRspackPlugin() : null,
   ],
   optimization: {
     minimizer: [
+      // new BundleAnalyzerPlugin(),
       new rspack.SwcJsMinimizerRspackPlugin(),
       new rspack.LightningCssMinimizerRspackPlugin({
         minimizerOptions: { targets },
       }),
     ],
+    splitChunks: {
+      chunks: 'all'
+    }
   }
 });

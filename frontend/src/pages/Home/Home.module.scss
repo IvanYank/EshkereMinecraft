@@ -38,6 +38,7 @@
 
   :global(.swiper-slide) {
     text-align: center;
+    overflow: hidden;
   }
 
   :global(.swiper-pagination-bullet) {
@@ -59,6 +60,7 @@
 
   &Text {
     font-size: 21px;
+    text-align: center;
   }
 }
 
@@ -118,10 +120,94 @@
   }
 
   &Text {
-    font-size: 32px;
     padding: 56px 72px;
     background-color: $primary-color;
     border-radius: 70px;
+  }
+
+  &Content {
+    font-size: 32px;
+    line-height: 1.2;
+    height: 100%;
+    max-height: 342px;
     text-align: center;
+    overflow: hidden;
+  }
+}
+
+[id] {
+  scroll-margin-top: 140px;
+}
+
+@media(max-width: 1260px) {
+  .activity {
+    &Text {
+      padding: 44px 52px;
+    }
+
+    &Content {
+      font-size: 24px;
+      max-height: 232px;
+    }
+  }
+}
+
+@media(max-width:910px) {
+  .description {
+    &Title {
+      font-size: 26px;
+    }
+
+    &Text {
+      font-size: 18px;
+    }
+  }
+
+  .members {
+    &Title {
+      font-size: 26px;
+    }
+
+    &List {
+      padding: 34px 26px;
+    }
+  }
+
+  .activityTitle {
+    font-size: 26px;
+  }
+
+  [id] {
+    scroll-margin-top: 108px;
+  }
+}
+
+@media (max-width: 780px) {
+  .activity {
+    flex-direction: column;
+    gap: 30px;
+
+    &Block {
+      width: auto;
+    }
+
+    &Text {
+      padding: 22px 38px;
+    }
+
+    &Content {
+      font-size: 22px;
+      max-height: 160px;
+    }
+  }
+}
+
+@media(max-width: 510px) {
+  .slider :global(.swiper) {
+    height: 520px;
+  }
+
+  .membersList :global(.swiper) {
+    height: 340px;
   }
 }
