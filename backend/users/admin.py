@@ -8,24 +8,33 @@ from .models import SiteUser, Token, VipUrl
 
 
 class GenerateTokensForm(forms.Form):
-    count = forms.IntegerField(min_value=1, max_value=1000, initial=10, label="Количество токенов")
+    count = forms.IntegerField(
+        min_value=1,
+        max_value=1000,
+        initial=10,
+        label="Количество токенов"
+    )
     owner = forms.ModelChoiceField(
         queryset=SiteUser.objects.filter(vip_status=True),
         required=False,
         label="Владелец (VIP)",
         help_text="Оставьте пустым, если токен без владельца"
     )
+    is_vip = forms.BooleanField(required=False, label="VIP токен")
 
 
 class VipUrlInline(admin.TabularInline):
     model = VipUrl
     extra = 1
-    fields = ['url']
+    fields = ['title', 'url']
 
 
 @admin.register(Token)
 class TokenAdmin(admin.ModelAdmin):
-    list_display = ['token', 'active', 'owner', 'created_at', 'used_at', 'used_by']
+    list_display = [
+        'token', 'active', 'owner', 'created_at',
+        'used_at', 'used_by', 'is_vip'
+        ]
     list_filter = ['active', 'created_at', 'owner']
     search_fields = ['token', 'owner__nickname']
     readonly_fields = ['created_at', 'used_at', 'used_by']
@@ -39,8 +48,16 @@ class TokenAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('generate/', self.admin_site.admin_view(self.generate_tokens_view), name='generate_tokens'),
-            path('generate/done/', self.admin_site.admin_view(self.generate_tokens_done_view), name='generate_tokens_done'),
+            path(
+                'generate/',
+                self.admin_site.admin_view(self.generate_tokens_view),
+                name='generate_tokens'
+            ),
+            path(
+                'generate/done/',
+                self.admin_site.admin_view(self.generate_tokens_done_view),
+                name='generate_tokens_done'
+            ),
         ]
         return custom_urls + urls
     
@@ -50,8 +67,10 @@ class TokenAdmin(admin.ModelAdmin):
             if form.is_valid():
                 count = form.cleaned_data['count']
                 owner = form.cleaned_data['owner']
-                
-                tokens = [Token.objects.create_token(owner=owner) for _ in range(count)]
+                is_vip = form.cleaned_data['is_vip']
+                tokens = [
+                    Token.objects.create_token(owner=owner, is_vip=is_vip) for _ in range(count)
+                ]
                 token_list = [t.token for t in tokens]
                 
                 request.session['generated_tokens'] = token_list

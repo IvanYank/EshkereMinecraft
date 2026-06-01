@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.middleware.common.CommonMiddleware',
+    'api.middleware.CacheControlMiddleware',
     'rest_framework',
     'events',
     'api',
