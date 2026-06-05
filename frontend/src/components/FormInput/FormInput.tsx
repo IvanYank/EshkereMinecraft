@@ -1,6 +1,8 @@
+import classNames from "classnames";
 import styles from "./FormInput.module.scss"
 
 export default function FormInput({
+  className,
   title,
   type,
   name,
@@ -9,8 +11,11 @@ export default function FormInput({
   onChange
 }: FormInputProps) {
   return (
-    <label className={styles.formBlock}>
-      <div className={styles.formBlockTitle}>{title}</div>
+    <label className={classNames(styles.formBlock, className)}>
+      {
+        title &&
+        <div className={styles.formBlockTitle}>{title}</div>
+      }
       <input
         className={styles.formBlockInput}
         type={type}
@@ -18,7 +23,10 @@ export default function FormInput({
         value={value}
         onChange={onChange}
       />
-      <div className={styles.formBlockError}>{errorText}</div>
+      {
+        errorText &&
+        <div className={styles.formBlockError}>{errorText}</div>
+      }
     </label>
   );
 }

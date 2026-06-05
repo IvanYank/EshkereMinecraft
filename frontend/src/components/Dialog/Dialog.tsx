@@ -54,11 +54,13 @@ export default function Dialog({
           <TokensForm />
         )
       }
-      {/* {
+      {
         dialogType === "Соцсети" && (
-          <SocialForm />
+          <SocialForm 
+            urls={personData.urls}
+          />
         )
-      } */}
+      }
     </dialog>
   )
 }

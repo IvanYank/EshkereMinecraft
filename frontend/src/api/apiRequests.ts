@@ -1,3 +1,4 @@
+import { PersonUrl } from "@/types/types";
 import accessRequest from "./accessRequest";
 
 export async function getTokensRequest() {
@@ -31,3 +32,15 @@ export async function changePasswordRequest(body: any) {
   return response
 }
 
+export async function addSocialRequest(method: "POST" | "DELETE", body: { id: number } | Omit<PersonUrl, "id">) {
+  const response = await accessRequest(
+    "api/users/vip_urls/", {
+    method: method,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body),
+  });
+
+  return response
+}

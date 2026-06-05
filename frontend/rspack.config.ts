@@ -40,11 +40,12 @@ export default defineConfig({
   module: {
     rules: [
       {
-        test: /\.svg$/,
-        type: 'asset',
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/, 
+        use: ['@svgr/webpack'],
       },
       {
-        test: /\.(png|jpe?g|gif|svg|webp)$/i,
+        test: /\.(png|jpe?g|gif|webp)$/i,
         type: "asset/resource"
       },
       {

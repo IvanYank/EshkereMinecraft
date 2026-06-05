@@ -15,16 +15,18 @@ export type News = {
   image: string,
 }
 
+export type SlideUser = {
+  id?: number,
+  nickname: string;
+  avatar?: string;
+  links?: Url[];
+}
+
 export type User = {
   avatar: string,
   id: number,
   nickname: string,
   vip_status: boolean,
   registered_at: string,
-}
-
-export type SlideUser = {
-  id?: number,
-  avatar?: string,
-  nickname: string,
+  urls: SlideUser[]
 }

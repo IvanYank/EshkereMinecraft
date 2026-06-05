@@ -1,0 +1,69 @@
+.block {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 16px;
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+.actionButton {
+  border-radius: 10px;
+  background-color: rgba(50, 50, 50, 0.27);
+  border: 3px solid #5B5B5B;
+  transition: border-color $transition-duration;
+  width: 43px;
+  height: 43px;
+  padding: 4px;
+  cursor: pointer;
+
+  &:hover,
+  &:focus {
+    border-color: #393939;
+  }
+}
+
+.actionIcon {
+  width: 100%;
+  height: 100%;
+  fill: white;
+  stroke: transparent;
+}
+
+.title,
+.url {
+  margin-bottom: 0;
+}
+
+.title {
+  input {
+    width: 120px;
+  }
+}
+
+.url {
+  input {
+    width: 160px;
+  }
+}
+
+@media(max-width:910px) {
+  .block {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .title {
+    input {
+      width: 100px;
+    }
+  }
+
+  .url {
+    input {
+      width: 120px;
+    }
+  }
+}

@@ -2,39 +2,31 @@ import classNames from "classnames";
 
 import styles from "./MembersSlide.module.scss"
 
-export default function MembersSlide({ id, title, imageUrl, links }: MemberSlideProps) {
+export default function MembersSlide({ id, nickname, avatar, links }: MemberSlideProps) {
   return (
     <div className={styles.container}>
       <div className={styles.textBlock}>
         <h3 className={styles.title}>
-          {title}
+          {nickname}
         </h3>
         <div className={styles.links}>
           {
-            links?.map((link, index) => {
-              let hostname = new URL(link)
-                .hostname
-                .replace(/^www\./, '')
-
-              if (hostname === "t.me") {
-                hostname = "telegram"
-              } else {
-                hostname = hostname.split(".")[0]
-              }
-
-              return (
-                <div key={`${index}_${hostname}`} className={styles.link}>
-                  <a href={link} target="blank">{hostname}</a>
-                </div>
-              )
-            })
+            links?.length
+              ? links.map((link, index) => {
+                return (
+                  <div key={`${nickname}_${index}`} className={styles.link}>
+                    <a href={link.url} target="blank">{link.title}</a>
+                  </div>
+                )
+              })
+              : <div>{"Чем знаменит?\nА знаменит многим!"}</div>
           }
         </div>
       </div>
       <div className={styles.image}>
         {
-          imageUrl
-            ? <img src={imageUrl} loading="lazy" alt="Аватар участника" />
+          avatar
+            ? <img src={avatar} loading="lazy" alt="Аватар участника" />
             : <div className={classNames(
               styles.imagePlaceholder,
               styles[`imagePlaceholder${id}`],

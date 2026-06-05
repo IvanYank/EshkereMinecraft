@@ -1,6 +1,12 @@
+type Url = {
+  id: number,
+  title: string,
+  url: string
+}
+
 type MemberSlideProps = {
   id?: number,
-  title?: string;
-  imageUrl?: string;
-  links?: string[];
+  nickname: string;
+  avatar?: string;
+  links?: Url[];
 }

@@ -7,12 +7,11 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css';
 
+import { Event, News, SlideUser, User } from './types';
 import MembersSlide from '@/components/MembersSlide';
+import slideImage from "@/assets/slide.webp"
 import Slide from '@/components/Slide';
 
-import slideImage from "@/assets/slide.webp"
-
-import { Event, News, SlideUser, User } from './types';
 import styles from "./Home.module.scss"
 
 
@@ -23,17 +22,20 @@ export default function Home() {
     {
       id: 0,
       avatar: undefined,
-      nickname: "Серьёзный никнейм"
+      nickname: "Серьёзный никнейм",
+      links: []
     },
     {
       id: 1,
       avatar: undefined,
-      nickname: "Серьёзный никнейм"
+      nickname: "Серьёзный никнейм",
+      links: []
     },
     {
       id: 2,
       avatar: undefined,
-      nickname: "Серьёзный никнейм"
+      nickname: "Серьёзный никнейм",
+      links: []
     },
   ])
 
@@ -124,7 +126,8 @@ export default function Home() {
           return {
             id: i % slidesPerView,
             avatar: user.avatar,
-            nickname: user.nickname
+            nickname: user.nickname,
+            links: user.urls
           }
         })
 
@@ -158,15 +161,6 @@ export default function Home() {
     getNews()
     getUsers()
   }, [])
-
-  const links = [
-    "https://www.youtube.com/",
-    "https://www.twitch.tv/",
-    "https://www.tiktok.com/ru-RU/",
-    "https://t.me/gordoslavych",
-    "https://kick.com/",
-    "https://vk.com/feed"
-  ]
 
   return (
     <div className={styles.container}>
@@ -229,7 +223,7 @@ export default function Home() {
                 vipUsers.map(user => {
                   return (
                     <SwiperSlide>
-                      <MembersSlide id={user.id} title={user.nickname} imageUrl={user.avatar} links={links} />
+                      <MembersSlide id={user.id} nickname={user.nickname} avatar={user.avatar} links={user.links} />
                     </SwiperSlide>
                   )
                 })

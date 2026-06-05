@@ -4,6 +4,7 @@ import classNames from "classnames";
 
 import logo from "@/assets/logo.webp"
 
+import { PersonData } from "./types";
 import { ModalType } from "@/types/types";
 import styles from "./Header.module.scss"
 
@@ -21,16 +22,12 @@ export default function Header() {
 
   const [dialogType, setDialogType] = useState<ModalType>("Авторизация")
 
-  const [personData, setPersonData] = useState<{
-    nickname: string,
-    avatar: string | undefined,
-    vip: boolean,
-    id: number
-  }>({
+  const [personData, setPersonData] = useState<PersonData>({
+    id: 0,
     nickname: "Серьёзный никнейм",
     avatar: undefined,
     vip: false,
-    id: 0
+    urls: []
   })
 
   const handleClick = (url: string) => {
@@ -113,10 +110,11 @@ export default function Header() {
     const data = await response.json()
 
     setPersonData({
+      id: data.id,
       nickname: data.nickname,
       avatar: data.avatar,
       vip: data.vip_status,
-      id: data.id,
+      urls: data.urls
     })
 
     setIsAuth(true)
@@ -155,15 +153,24 @@ export default function Header() {
               </button>
             </li>
             <li className={styles.navigationElement}>
-             <button type="button"
-className={styles.link}
- onClick={() => { window.location.href = "https://cubethrone.fun/installer/CubeThrone_v6.exe" }}>
-                      Лаунчер
-                    </button>
+              <button
+                onClick={() => handleClick("events")}
+                className={styles.link}
+                type="button"
+              >
+                События
+              </button>
             </li>
-            {/* <li className={styles.navigationElement}>
+            <li className={styles.navigationElement}>
+              <button type="button"
+                className={styles.link}
+                onClick={() => { window.location.href = "https://cubethrone.fun/installer/CubeThrone_v6.exe" }}>
+                Лаунчер
+              </button>
+            </li>
+            <li className={styles.navigationElement}>
               <Link className={styles.link} to="/map">Карта</Link>
-            </li> */}
+            </li>
           </ul>
         </nav>
         {(!isAuthLoading && !isAuth)
@@ -187,16 +194,13 @@ className={styles.link}
                 !isAuthLoading &&
                 (
                   <div id="person-popover" popover="auto" className={styles.personPopover}>
-                    <button type="button" onClick={() => { window.location.href = "https://cubethrone.fun/installer/CubeThrone_v6.exe" }}>
-                      Лаунчер
-                    </button>
                     {
                       personData.vip &&
                       (
                         <>
-                          {/* <button type="button" onClick={() => openDialog("Соцсети")}>
+                          <button type="button" onClick={() => openDialog("Соцсети")}>
                             Соцсети
-                          </button> */}
+                          </button>
                           <button type="button" onClick={() => openDialog("Токены")}>
                             Токены
                           </button>

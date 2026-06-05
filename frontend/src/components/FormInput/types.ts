@@ -1,5 +1,6 @@
 type FormInputProps = {
-  title: string,
+  className?: string,
+  title?: string,
   type: "text" | "password",
   name: string,
   value: string,
