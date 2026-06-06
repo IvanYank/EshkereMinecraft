@@ -15,6 +15,7 @@ export default function RegisterForm({
   setPersonData,
   setIsAuth
 }: RegisterFormProps) {
+  const [isLoading, setIsLoading] = useState(false)
 
   const [formValues, setFormValues] = useState({
     nickname: "",
@@ -87,6 +88,8 @@ export default function RegisterForm({
       let body = rest
 
       if (validate()) {
+        setIsLoading(true)
+
         const response = await fetch(url, {
           headers: headers,
           method: "POST",
@@ -97,10 +100,11 @@ export default function RegisterForm({
 
         if (response.ok) {
           setPersonData({
+            id: json.user.id,
             nickname: json.user.nickname,
             avatar: json.user.avatar,
             vip: json.user.vip_status,
-            id: json.user.id
+            urls: json.user.urls ?? []
           })
 
           localStorage.setItem("accessToken", json.access)
@@ -127,25 +131,27 @@ export default function RegisterForm({
     } catch (e) {
       console.error(e)
     }
+
+    setIsLoading(false)
   }
 
   return (
-    <FormLayout title="Регистрация" submitHandler={submitHandler}>
+    <FormLayout title="Регистрация" submitHandler={submitHandler} isLoading={isLoading}>
       <FormInput
         title={"Никнейм"}
-        type={"text"}
         name={"nickname"}
         value={formValues.nickname}
         errorText={errorList.nickname}
         onChange={formValuesChange}
+        disabled={isLoading}
       />
       <FormInput
         title={"Токен"}
-        type={"text"}
         name={"token"}
         value={formValues.token}
         errorText={errorList.token}
         onChange={formValuesChange}
+        disabled={isLoading}
       />
       <FormInput
         title={"Пароль"}
@@ -154,6 +160,7 @@ export default function RegisterForm({
         value={formValues.password}
         errorText={errorList.password}
         onChange={formValuesChange}
+        disabled={isLoading}
       />
       <FormInput
         title={"Повторный пароль"}
@@ -162,6 +169,7 @@ export default function RegisterForm({
         value={formValues.passwordSecond}
         errorText={errorList.passwordSecond}
         onChange={formValuesChange}
+        disabled={isLoading}
       />
     </FormLayout>
   )

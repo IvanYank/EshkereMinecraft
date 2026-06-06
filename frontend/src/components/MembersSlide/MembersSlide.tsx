@@ -2,10 +2,21 @@ import classNames from "classnames";
 
 import styles from "./MembersSlide.module.scss"
 
-export default function MembersSlide({ id, nickname, avatar, links }: MemberSlideProps) {
+export default function MembersSlide({
+  id,
+  nickname,
+  avatar,
+  links,
+  isLoading = false
+}: MemberSlideProps) {
   return (
     <div className={styles.container}>
-      <div className={styles.textBlock}>
+      <div className={classNames(
+        styles.textBlock,
+        {
+          [styles.textBlockLoading]: isLoading
+        }
+      )}>
         <h3 className={styles.title}>
           {nickname}
         </h3>

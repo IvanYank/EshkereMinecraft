@@ -12,6 +12,8 @@ export default function LoginForm({
   setPersonData,
   setIsAuth
 }: LoginFormProps) {
+  const [isLoading, setIsLoading] = useState(false)
+
   const [formValues, setFormValues] = useState({
     nickname: "",
     password: ""
@@ -61,6 +63,8 @@ export default function LoginForm({
       };
 
       if (validate()) {
+        setIsLoading(true)
+
         const response = await fetch(url, {
           headers: headers,
           method: "POST",
@@ -71,10 +75,11 @@ export default function LoginForm({
 
         if (response.ok) {
           setPersonData({
+            id: json.user.id,
             nickname: json.user.nickname,
-            avatar: `https://cubethrone.fun/${json.user.avatar}` ,
+            avatar: `https://cubethrone.fun/${json.user.avatar}`,
             vip: json.user.vip_status,
-            id: json.user.id
+            urls: json.user.urls ?? []
           })
 
           localStorage.setItem("accessToken", json.access)
@@ -101,19 +106,22 @@ export default function LoginForm({
     } catch (e) {
       console.error(e)
     }
+
+    setIsLoading(false)
   }
 
   return (
-    <FormLayout title="Авторизация" submitHandler={submitHandler}>
+    <FormLayout title="Авторизация" submitHandler={submitHandler} isLoading={isLoading}>
       <FormInput
+        disabled={isLoading}
         title={"Никнейм"}
-        type={"text"}
         name={"nickname"}
         value={formValues.nickname}
         errorText={errorList.nickname}
         onChange={formValuesChange}
       />
       <FormInput
+        disabled={isLoading}
         title={"Пароль"}
         type={"password"}
         name={"password"}

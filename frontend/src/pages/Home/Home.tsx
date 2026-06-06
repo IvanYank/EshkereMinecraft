@@ -18,6 +18,7 @@ import styles from "./Home.module.scss"
 export default function Home() {
   const location = useLocation();
 
+  const [isLoading, setIsLoading] = useState(true)
   const [vipUsers, setVipUsers] = useState<SlideUser[]>([
     {
       id: 0,
@@ -142,6 +143,7 @@ export default function Home() {
       }
 
       setVipUsers(users)
+      setIsLoading(false)
     }
   }
 
@@ -223,7 +225,13 @@ export default function Home() {
                 vipUsers.map(user => {
                   return (
                     <SwiperSlide>
-                      <MembersSlide id={user.id} nickname={user.nickname} avatar={user.avatar} links={user.links} />
+                      <MembersSlide
+                        id={user.id}
+                        nickname={user.nickname}
+                        avatar={user.avatar}
+                        links={user.links}
+                        isLoading={isLoading}
+                      />
                     </SwiperSlide>
                   )
                 })

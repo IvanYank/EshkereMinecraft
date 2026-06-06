@@ -7,4 +7,5 @@ export type DialogProps = {
   personData: PersonData,
   setIsAuth: React.Dispatch<React.SetStateAction<boolean>>,
   setPersonData: React.Dispatch<React.SetStateAction<PersonData>>,
+  onCloseDialog: React.ReactEventHandler<HTMLDialogElement>
 }

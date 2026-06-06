@@ -31,6 +31,11 @@
       &:focus {
         border-color: #393939;
       }
+
+      &:disabled {
+        cursor: not-allowed;
+        border-color: #393939;
+      }
     }
 
     &:last-of-type {

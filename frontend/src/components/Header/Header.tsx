@@ -45,6 +45,10 @@ export default function Header() {
     dialogRef?.current?.showModal()
   }
 
+  const onCloseDialog = () => {
+    setDialogType(null)
+  }
+
   const logoutHandler = async () => {
     try {
       const response = await fetch("api/users/logout/", {
@@ -114,7 +118,7 @@ export default function Header() {
       nickname: data.nickname,
       avatar: data.avatar,
       vip: data.vip_status,
-      urls: data.urls
+      urls: data.urls ?? []
     })
 
     setIsAuth(true)
@@ -228,6 +232,7 @@ export default function Header() {
           personData={personData}
           setPersonData={setPersonData}
           setIsAuth={setIsAuth}
+          onCloseDialog={onCloseDialog}
         // setIsModalOpen={setIsModalOpen}
         />
         {/* </Suspense>

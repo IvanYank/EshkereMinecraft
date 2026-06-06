@@ -2,9 +2,10 @@ import classNames from "classnames";
 import styles from "./FormInput.module.scss"
 
 export default function FormInput({
+  disabled = false,
   className,
   title,
-  type,
+  type = "text",
   name,
   value,
   errorText,
@@ -17,6 +18,7 @@ export default function FormInput({
         <div className={styles.formBlockTitle}>{title}</div>
       }
       <input
+        disabled={disabled}
         className={styles.formBlockInput}
         type={type}
         name={name}
@@ -24,7 +26,7 @@ export default function FormInput({
         onChange={onChange}
       />
       {
-        errorText &&
+        errorText != undefined &&
         <div className={styles.formBlockError}>{errorText}</div>
       }
     </label>

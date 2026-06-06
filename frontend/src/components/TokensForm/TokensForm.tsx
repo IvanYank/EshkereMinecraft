@@ -7,13 +7,23 @@ import FormLayout from "@/layout/FormLayout"
 import styles from "./TokensForm.module.scss"
 
 export default function TokensForm() {
+  const [isLoading, setIsLoading] = useState(true)
+
+  const [tokens, setTokens] = useState((new Array(8)
+    .fill({
+      id: -1,
+      token: "token"
+    })
+  )
+  )
   const [copyButtonID, setCopyButtonID] = useState<number | null>(null)
-  const [tokens, setTokens] = useState([])
 
   const getActiveTokens = async () => {
     try {
       const data = await getTokensRequest()
+
       setTokens(data.slice(0, 8))
+      setIsLoading(false)
     } catch (e) {
       console.error(e)
     }
@@ -39,24 +49,30 @@ export default function TokensForm() {
   return (
     <FormLayout title="Токены">
       {
-        // isTokensLoading
-        //   ? <div className={styles.placeholder}></div>
-        // :
-        tokens.map((token: any) => (
-          <div key={token.id} className={styles.token}>
-            <div className={styles.tokenText}>{token.token}</div>
+        (tokens.map((token: any, index) => (
+          <div key={`${token.id}_${index}`} className={classNames(styles.token)}>
+            <div className={classNames(
+              styles.tokenText,
+              {
+                [styles.tokenTextLoading]: isLoading
+              }
+            )}
+            >
+              {token.token}
+            </div>
             <button className={classNames(
               styles.tokenCopy,
               {
                 [styles.tokenCopyActive]: copyButtonID === token.id
               }
             )}
+              disabled={isLoading}
               type='button'
               onClick={() => copyToken(token.id, token.token)}>
               {copyButtonID === token.id ? "Copied!" : "Copy"}
             </button>
           </div>
-        ))
+        )))
       }
     </FormLayout>
   )

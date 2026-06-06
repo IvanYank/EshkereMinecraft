@@ -9,6 +9,7 @@ import Check from '@/assets/check.svg?react';
 import Basket from '@/assets/basket.svg?react';
 
 import styles from "./SocialForm.module.scss"
+import Spinner from "../Spinner"
 
 export default function SocialForm({
   urls
@@ -23,6 +24,8 @@ export default function SocialForm({
     )
   )
 
+  const [loadingList, setLoadingList] = useState(new Array(5).fill(false))
+
   const inputChangeHandler = (index: number, type: "title" | "url", value: string) => {
     setInputsList(prev => {
       return prev.map((item, idx) => {
@@ -35,44 +38,56 @@ export default function SocialForm({
   };
 
   const addNewLink = async (index: number, type: "add" | "remove") => {
-    const { id, ...rest } = inputsList[index]
+    try {
+      const { id, ...rest } = inputsList[index]
 
-    let body: { id: number } | Omit<PersonUrl, "id">
-    let method: "POST" | "DELETE" = "POST"
+      let body: { id: number } | Omit<PersonUrl, "id">
+      let method: "POST" | "DELETE" = "POST"
 
-    if (type === "add") {
-      method = "POST"
-      body = rest
-    } else {
-      method = "DELETE"
-      body = { id }
-    }
+      if (type === "add") {
+        method = "POST"
+        body = rest
+      } else {
+        method = "DELETE"
+        body = { id }
+      }
 
-    const response = await addSocialRequest(method, body)
+      setLoadingList(prev => {
+        return prev.map((item, idx) => index === idx ? true : item)
+      })
 
-    if (response.ok) {
-      const body = await response.json()
+      const response = await addSocialRequest(method, body)
 
-      setInputsList(prev => {
-        return prev.map((item, idx) => {
-          if (idx === index) {
-            return type === "remove"
-              ? {
-                id: -1,
-                title: "",
-                url: ""
-              }
-              : {
-                id: body.id,
-                title: body.title,
-                url: body.url
-              }
-          }
+      if (response.ok) {
+        const body = await response.json()
 
-          return item;
+        setInputsList(prev => {
+          return prev.map((item, idx) => {
+            if (idx === index) {
+              return type === "remove"
+                ? {
+                  id: -1,
+                  title: "",
+                  url: ""
+                }
+                : {
+                  id: body.id,
+                  title: body.title,
+                  url: body.url
+                }
+            }
+
+            return item;
+          });
         });
-      });
+      }
+    } catch (e) {
+      console.log(e)
     }
+
+    setLoadingList(prev => {
+      return prev.map((item, idx) => index === idx ? false : item)
+    })
   }
 
   return (
@@ -82,22 +97,23 @@ export default function SocialForm({
           return (
             <div key={index} className={styles.block}>
               <FormInput
+                disabled={loadingList[index]}
                 className={styles.title}
                 title={"Название"}
-                type={"text"}
                 name={`title_${index}`}
                 value={value.title}
                 onChange={(e) => inputChangeHandler(index, "title", e.target.value)}
               />
               <FormInput
+                disabled={loadingList[index]}
                 className={styles.url}
                 title={"Ссылка"}
-                type={"text"}
                 name={`link_${index}`}
                 value={value.url}
                 onChange={(e) => inputChangeHandler(index, "url", e.target.value)}
               />
               <button
+                disabled={loadingList[index]}
                 className={styles.actionButton}
                 type="button"
                 onClick={
@@ -107,9 +123,13 @@ export default function SocialForm({
                 }
               >
                 {
-                  value.id === -1
-                    ? <Check className={styles.actionIcon} />
-                    : <Basket className={styles.actionIcon} />
+                  loadingList[index]
+                    ? <Spinner />
+                    : (
+                      value.id === -1
+                        ? <Check className={styles.actionIcon} />
+                        : <Basket className={styles.actionIcon} />
+                    )
                 }
               </button>
             </div>

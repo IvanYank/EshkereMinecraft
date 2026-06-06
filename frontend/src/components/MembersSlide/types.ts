@@ -9,4 +9,5 @@ type MemberSlideProps = {
   nickname: string;
   avatar?: string;
   links?: Url[];
+  isLoading?: boolean
 }

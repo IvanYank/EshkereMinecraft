@@ -1,7 +1,7 @@
 .container{
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  min-height: 100dvh;
 }
 
 header{
@@ -12,5 +12,7 @@ header{
 }
 
 main{
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
 }

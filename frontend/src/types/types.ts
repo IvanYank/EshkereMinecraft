@@ -1,4 +1,4 @@
-export type ModalType = "Авторизация" | "Регистрация" | "Настройки" | "Токены" | "Соцсети"
+export type ModalType = "Авторизация" | "Регистрация" | "Настройки" | "Токены" | "Соцсети" | null
 
 export type PersonUrl = {
   id: number,

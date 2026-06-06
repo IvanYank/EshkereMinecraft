@@ -21,6 +21,11 @@
     &:hover {
       background-color: #781dff;
     }
+
+    &:disabled {
+      cursor: not-allowed;
+      background-color: #5B5B5B;
+    }
   }
 }
 

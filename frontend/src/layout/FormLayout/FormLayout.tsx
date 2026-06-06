@@ -1,6 +1,8 @@
+import Spinner from "@/components/Spinner"
 import styles from "./FormLayout.module.scss"
 
 export default function FormLayout({
+  isLoading,
   title,
   children,
   submitHandler,
@@ -11,7 +13,17 @@ export default function FormLayout({
       {children}
       {
         submitHandler && (
-          <button className={styles.formSubmit} type="submit">Отправить</button>
+          <button
+            disabled={isLoading}
+            className={styles.formSubmit}
+            type="submit"
+          >
+            {
+              isLoading
+                ? <Spinner />
+                : "Отправить"
+            }
+          </button>
         )
       }
     </form>

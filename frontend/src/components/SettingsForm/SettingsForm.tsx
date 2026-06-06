@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { changeAvatarRequest, changePasswordRequest } from "@/api"
 import FormLayout from "@/layout/FormLayout"
 import FormInput from "../FormInput"
 
 import styles from "./SettingsForm.module.scss"
+import Spinner from "../Spinner"
 
 const errorListInitialState = {
   old_password: "",
@@ -12,19 +13,23 @@ const errorListInitialState = {
 }
 
 export default function SettingsForm({
-  id,
   oldAvatar,
   closeReg,
-  setPersonData
+  setPersonData,
+  isVip
 }: SettingsFormProps) {
   const [formValues, setFormValues] = useState({
     old_password: "",
     new_password: ""
   })
 
+  const [isLoadingPassword, setIsLoadingPassword] = useState(false)
+  const [isLoadingAvatar, setIsLoadingAvatar] = useState(false)
+
   const [avatarFile, setAvatarFile] = useState<any>()
   const [avatar, setAvatar] = useState(oldAvatar)
   const [avatarIsChanged, setAvatarIsChanged] = useState(false)
+
   const [errorList, setErrorList] = useState(errorListInitialState)
 
   const validate = () => {
@@ -55,6 +60,8 @@ export default function SettingsForm({
     try {
       if (!avatarFile) return;
 
+      setIsLoadingAvatar(true)
+
       const formData = new FormData();
       formData.append('avatar', avatarFile);
 
@@ -80,15 +87,19 @@ export default function SettingsForm({
     } catch (e) {
       console.error(e)
     }
+
+    setIsLoadingAvatar(false)
   }
 
   const changePasswordHandler = async () => {
     try {
       if (validate()) {
+        setIsLoadingPassword(true)
+
         const response = await changePasswordRequest(formValues)
 
         if (response.ok) {
-          closeReg()
+          // closeReg()
         } else {
           const json = await response.json()
 
@@ -102,8 +113,6 @@ export default function SettingsForm({
           if (json.error) {
             setErrorList(prev => ({
               ...prev,
-              nickname: json.error,
-              password: json.error,
               old_password: json.error,
               new_password: json.error,
             }))
@@ -113,6 +122,8 @@ export default function SettingsForm({
     } catch (e) {
       console.error(e)
     }
+
+    setIsLoadingPassword(false)
   }
 
   const avatarChange = (
@@ -134,33 +145,29 @@ export default function SettingsForm({
     }))
   }
 
-  const getUrls = async () => {
-    const response = await fetch(`api/users/vip_urls/?id=${id}`)
-
-    if (response.ok) {
-      const body = await response.json()
-
-      console.log(body)
-    }
-  }
-
-  useEffect(() => {
-    getUrls()
-  }, [])
-
   return (
     <FormLayout title="Настройки">
-      <div className={styles.settingsBlock}>
-        <label className={styles.avatar}>
-          <img
-            className={styles.avatarPreview}
-            src={avatar}
-            alt="Предпросмотр аватара"
-          />
-          <input type="file" accept=".png,.jpg,.jpeg" onChange={avatarChange} />
-        </label>
-        <button disabled={!avatarIsChanged} className={styles.saveAvatar} onClick={saveAvatarHandler} type="button">Сохранить</button>
-      </div>
+      {
+        isVip && (
+          <div className={styles.settingsBlock}>
+            <label className={styles.avatar}>
+              <img
+                className={styles.avatarPreview}
+                src={avatar}
+                alt="Предпросмотр аватара"
+              />
+              <input type="file" accept=".png,.jpg,.jpeg" onChange={avatarChange} />
+            </label>
+            <button disabled={!avatarIsChanged || isLoadingAvatar} className={styles.handlerButton} onClick={saveAvatarHandler} type="button">
+              {
+                isLoadingAvatar
+                  ? <Spinner />
+                  : "Сохранить"
+              }
+            </button>
+          </div>
+        )
+      }
       <div className={styles.settingsBlock}>
         <FormInput
           title={"Старый пароль"}
@@ -178,7 +185,13 @@ export default function SettingsForm({
           errorText={errorList.new_password}
           onChange={formDataChange}
         />
-        <button className={styles.saveAvatar} type="button" onClick={changePasswordHandler}>Изменить</button>
+        <button disabled={isLoadingPassword} className={styles.handlerButton} type="button" onClick={changePasswordHandler}>
+          {
+            isLoadingPassword
+              ? <Spinner />
+              : "Изменить"
+          }
+        </button>
       </div>
     </FormLayout>
   )

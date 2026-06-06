@@ -13,13 +13,14 @@ export default function Dialog({
   personData,
   setPersonData,
   setIsAuth,
+  onCloseDialog
 }: DialogProps) {
   const closeReg = () => {
     dialogRef.current?.close();
   };
 
   return (
-    <dialog className={styles.dialog} ref={dialogRef}>
+    <dialog className={styles.dialog} ref={dialogRef} onClose={onCloseDialog}>
       <button className={styles.dialogClose} type="button" onClick={closeReg}></button>
       {
         dialogType === "Авторизация" && (
@@ -45,7 +46,7 @@ export default function Dialog({
             closeReg={closeReg}
             setPersonData={setPersonData}
             oldAvatar={personData.avatar}
-            id={personData.id}
+            isVip={personData.vip}
           />
         )
       }
@@ -56,7 +57,7 @@ export default function Dialog({
       }
       {
         dialogType === "Соцсети" && (
-          <SocialForm 
+          <SocialForm
             urls={personData.urls}
           />
         )

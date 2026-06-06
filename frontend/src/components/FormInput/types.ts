@@ -1,7 +1,8 @@
 type FormInputProps = {
+  disabled?: boolean,
   className?: string,
   title?: string,
-  type: "text" | "password",
+  type?: "text" | "password",
   name: string,
   value: string,
   errorText?: string,
