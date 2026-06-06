@@ -3,9 +3,9 @@ import secrets
 
 
 class TokenManager(models.Manager):
-    def create_token(self, owner=None):
+    def create_token(self, owner=None, is_vip=False):
         token = secrets.token_urlsafe(16)
-        return self.create(token=token, owner=owner)
+        return self.create(token=token, owner=owner, is_vip=is_vip)
     
     def get_active_token(self, token_value):
         try:
@@ -79,6 +79,7 @@ class Token(models.Model):
         limit_choices_to={'vip_status': True},
         verbose_name="Владелец (VIP)"
     )
+    is_vip = models.BooleanField(default=False, verbose_name="VIP токен")
     
     objects = TokenManager()
     
@@ -94,6 +95,9 @@ class Token(models.Model):
         self.active = False
         self.used_at = timezone.now()
         self.used_by = user
+        if self.is_vip:
+            user.vip_status = True
+            user.save()
         self.save()
 
 
@@ -104,6 +108,10 @@ class VipUrl(models.Model):
         related_name='vip_urls',
         limit_choices_to={'vip_status': True},
         verbose_name="VIP пользователь",
+    )
+    title = models.CharField(
+        max_length=100,
+        verbose_name="Название"
     )
     url = models.URLField(verbose_name="URL")
 

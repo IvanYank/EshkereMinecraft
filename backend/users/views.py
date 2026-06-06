@@ -25,7 +25,7 @@ from .serializers import (
 
 
 class SiteUserViewSet(viewsets.ModelViewSet):
-    queryset = SiteUser.objects.all()
+    queryset = SiteUser.objects.prefetch_related('vip_urls').all()
     serializer_class = SiteUserSerializer
     permission_classes = [AllowAny]
 
@@ -114,13 +114,19 @@ class SiteUserViewSet(viewsets.ModelViewSet):
             user = SiteUser.objects.get(nickname=nickname)
         except SiteUser.DoesNotExist:
             return Response(
-                {'error': 'Неверный ник или пароль'},
+                {
+                    'login': 'Неверный ник или пароль',
+                    'password': 'Неверный ник или пароль',
+                },
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
         if not user.check_password(password):
             return Response(
-                {'error': 'Неверный ник или пароль'},
+                {
+                    'login': 'Неверный ник или пароль',
+                    'password': 'Неверный ник или пароль',
+                },
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
@@ -283,22 +289,22 @@ class SiteUserViewSet(viewsets.ModelViewSet):
                 )
             else:
                 return Response({'error': 'id required'}, status=400)
-    
+
         # POST и DELETE — только для своего профиля
         header = request.headers.get('Authorization', '')
         if not header.startswith('Bearer '):
             return Response({'error': 'Token required'}, status=401)
-    
+
         user = get_user_from_token(header[7:])
         if not user or not user.vip_status:
             return Response({'error': 'Только для VIP'}, status=403)
-    
+
         if request.method == 'POST':
             serializer = VipUrlCreateSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save(vip=user)
             return Response(serializer.data, status=201)
-    
+
         if request.method == 'DELETE':
             url_id = request.data.get('id')
             if not url_id:

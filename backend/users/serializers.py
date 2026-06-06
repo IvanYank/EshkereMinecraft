@@ -2,10 +2,20 @@ from rest_framework import serializers
 from .models import SiteUser, Token, VipUrl
 
 
+class VipUrlSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VipUrl
+        fields = ['id', 'title', 'url']
+
+
 class SiteUserSerializer(serializers.ModelSerializer):
+    urls = VipUrlSerializer(many=True, read_only=True, source='vip_urls')
+
     class Meta:
         model = SiteUser
-        fields = ['id', 'nickname', 'avatar', 'vip_status', 'registered_at']
+        fields = [
+            'id', 'nickname', 'avatar', 'vip_status', 'registered_at', 'urls'
+        ]
         read_only_fields = fields
 
 
@@ -20,7 +30,9 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_token(self, value):
         token = Token.objects.get_active_token(value)
         if not token:
-            raise serializers.ValidationError("Токен недействителен или уже использован")
+            raise serializers.ValidationError(
+                "Токен недействителен или уже использован"
+            )
         return value
     
     def validate_nickname(self, value):
@@ -61,17 +73,14 @@ class AvatarSerializer(serializers.ModelSerializer):
 class TokenListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Token
-        fields = ['id', 'token', 'active', 'created_at', 'used_at', 'used_by']
+        fields = [
+            'id', 'token', 'active', 'is_vip',
+            'created_at', 'used_at', 'used_by'
+        ]
         read_only_fields = fields
-
-
-class VipUrlSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VipUrl
-        fields = ['id', 'url']
 
 
 class VipUrlCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = VipUrl
-        fields = ['url']
+        fields = ['title', 'url']
