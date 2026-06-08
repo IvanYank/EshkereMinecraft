@@ -173,3 +173,5 @@ AUTHME_TABLE = os.getenv('AUTHME_TABLE', 'authme')
 
 CSRF_TRUSTED_ORIGINS = ['https://cubethrone.fun', 'https://www.cubethrone.fun']
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+USE_ETAGS = True
