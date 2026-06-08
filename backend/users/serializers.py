@@ -81,6 +81,8 @@ class TokenListSerializer(serializers.ModelSerializer):
 
 
 class VipUrlCreateSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = VipUrl
-        fields = ['title', 'url']
+        fields = ['id', 'title', 'url']
