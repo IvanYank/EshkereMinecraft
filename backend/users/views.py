@@ -131,6 +131,10 @@ class SiteUserViewSet(viewsets.ModelViewSet):
             )
 
         tokens = get_tokens_for_user(user)
+        urls_data = VipUrlSerializer(
+            VipUrl.objects.filter(vip=user),
+            many=True
+        ).data
         response = Response(
             {
                 'user': {
@@ -138,6 +142,7 @@ class SiteUserViewSet(viewsets.ModelViewSet):
                     'nickname': user.nickname,
                     'vip_status': user.vip_status,
                     'avatar': user.avatar.url if user.avatar else None,
+                    'urls': urls_data,
                 },
                 'access': tokens['access'],
             }
