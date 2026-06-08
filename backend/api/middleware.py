@@ -1,12 +1,17 @@
-import hashlib
 from django.utils.cache import patch_cache_control
 
 
 class CacheControlMiddleware:
-    # Публичные пути (ответ не зависит от пользователя)
-    PUBLIC_PATHS = ('/api/events', '/api/news', '/api/users/')
-    # Приватные пути (нужна авторизация, ответ зависит от пользователя)
-    PRIVATE_PATHS = ('/api/users/me', '/api/users/my_tokens')
+    """
+    Добавляет заголовок Cache-Control для разрешённых GET-запросов.
+    Формат: (путь_или_префикс, время_в_секундах, no_cache)
+    Если no_cache=True — max-age не ставится, только проверка по ETag.
+    """
+
+    CACHED_GET_PATHS = (
+        ('/api/events', 10800, False),
+        ('/api/news', 10800, False),
+    )
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -17,34 +22,12 @@ class CacheControlMiddleware:
         if request.method != 'GET':
             return response
 
-        path = request.path
-
-        if any(path.startswith(p) for p in self.PUBLIC_PATHS + self.PRIVATE_PATHS):
-            if not response.has_header('ETag'):
-                content = response.content
-                etag = hashlib.md5(content).hexdigest() if content else ''
-                if etag:
-                    response['ETag'] = f'"{etag}"'
-
-        # Публичные эндпоинты
-        if any(path.startswith(p) for p in self.PUBLIC_PATHS):
-            if path.startswith('/api/events') or path.startswith('/api/news'):
-                patch_cache_control(response, max_age=10800)
-            else:
-                patch_cache_control(response, no_cache=True, public=True)
-
-            if 'Authorization' in request.headers:
-                vary = response.get('Vary', '')
-                vary = ', '.join(
-                    v for v in vary.split(', ') if v.strip() != 'Authorization'
-                )
-                if vary:
-                    response['Vary'] = vary
+        for path_prefix, max_age, no_cache in self.CACHED_GET_PATHS:
+            if request.path.startswith(path_prefix):
+                if no_cache:
+                    patch_cache_control(response, no_cache=True, private=True)
                 else:
-                    del response['Vary']
-
-        # Приватные эндпоинты
-        elif any(path.startswith(p) for p in self.PRIVATE_PATHS):
-            patch_cache_control(response, no_cache=True, private=True)
+                    patch_cache_control(response, max_age=max_age)
+                break
 
         return response
