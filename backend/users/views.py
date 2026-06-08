@@ -25,7 +25,7 @@ from .serializers import (
 
 
 class SiteUserViewSet(viewsets.ModelViewSet):
-    queryset = SiteUser.objects.prefetch_related('vip_urls').all()
+    queryset = SiteUser.objects.prefetch_related('vip_urls').order_by('id')
     serializer_class = SiteUserSerializer
     permission_classes = [AllowAny]
 
