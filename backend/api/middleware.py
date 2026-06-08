@@ -2,16 +2,12 @@ from django.utils.cache import patch_cache_control
 
 
 class CacheControlMiddleware:
-    """
-    Добавляет заголовок Cache-Control для разрешённых GET-запросов.
-    Формат: (путь_или_префикс, время_в_секундах, no_cache)
-    Если no_cache=True — max-age не ставится, только проверка по ETag.
-    """
-
+    # Формат: (путь, max_age, public)
     CACHED_GET_PATHS = (
         ('/api/events', 10800, False),
         ('/api/news', 10800, False),
-        ('/api/users/', 0, True),
+        ('/api/users/', 0, True),        # <-- теперь public
+        ('/api/users/me', 0, True),
         ('/api/users/my_tokens', 0, True),
     )
 
@@ -24,12 +20,14 @@ class CacheControlMiddleware:
         if request.method != 'GET':
             return response
 
-        for path_prefix, max_age, no_cache in self.CACHED_GET_PATHS:
+        for path_prefix, max_age, public in self.CACHED_GET_PATHS:
             if request.path.startswith(path_prefix):
-                if no_cache:
-                    patch_cache_control(response, no_cache=True, private=True)
-                else:
-                    patch_cache_control(response, max_age=max_age)
+                patch_cache_control(
+                    response,
+                    max_age=max_age,
+                    must_revalidate=True,
+                    public=public,
+                )
                 break
 
         return response
