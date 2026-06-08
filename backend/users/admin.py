@@ -35,7 +35,7 @@ class TokenAdmin(admin.ModelAdmin):
         'token', 'active', 'owner', 'created_at',
         'used_at', 'used_by', 'is_vip'
         ]
-    list_filter = ['active', 'created_at', 'owner']
+    list_filter = ['active', 'created_at', 'owner', 'is_vip']
     search_fields = ['token', 'owner__nickname']
     readonly_fields = ['created_at', 'used_at', 'used_by']
     autocomplete_fields = ['owner']
