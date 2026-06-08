@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Prefetch
 
 from .authme import change_authme_password
 
@@ -25,7 +26,9 @@ from .serializers import (
 
 
 class SiteUserViewSet(viewsets.ModelViewSet):
-    queryset = SiteUser.objects.prefetch_related('vip_urls').order_by('id')
+    queryset = SiteUser.objects.prefetch_related(
+        Prefetch('vip_urls', queryset=VipUrl.objects.order_by('id'))
+    ).order_by('id')
     serializer_class = SiteUserSerializer
     permission_classes = [AllowAny]
 
