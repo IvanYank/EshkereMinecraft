@@ -321,3 +321,10 @@ class SiteUserViewSet(viewsets.ModelViewSet):
             if not deleted:
                 return Response({'error': 'Not found'}, status=404)
             return Response({'message': 'Deleted'})
+
+    @action(detail=False, methods=['get'])
+    def streamers(self, request):
+        """Список VIP-пользователей (стримеров) с их ссылками"""
+        queryset = self.get_queryset().filter(vip_status=True)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
