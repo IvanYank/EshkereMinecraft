@@ -5,6 +5,7 @@ from .models import SiteUser, Token, VipUrl
 class VipUrlSerializer(serializers.ModelSerializer):
     class Meta:
         model = VipUrl
+        ordering = ['id']
         fields = ['id', 'title', 'url']
 
 

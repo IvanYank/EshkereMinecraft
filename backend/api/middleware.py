@@ -3,10 +3,9 @@ from django.utils.cache import patch_cache_control
 
 class CacheControlMiddleware:
     """
-    Добавляет Cache-Control для GET-запросов.
-    Формат: (путь, max_age, режим_проверки)
-    - max_age > 0: обычный кеш (events, news)
-    - max_age == 0 и проверка=True: max-age=0, must-revalidate, private (users, me, my_tokens)
+    Добавляет заголовок Cache-Control для разрешённых GET-запросов.
+    Формат: (путь_или_префикс, время_в_секундах, no_cache)
+    Если no_cache=True — max-age не ставится, только проверка по ETag.
     """
 
     CACHED_GET_PATHS = (
@@ -25,15 +24,10 @@ class CacheControlMiddleware:
         if request.method != 'GET':
             return response
 
-        for path_prefix, max_age, revalidate in self.CACHED_GET_PATHS:
+        for path_prefix, max_age, no_cache in self.CACHED_GET_PATHS:
             if request.path.startswith(path_prefix):
-                if revalidate:
-                    patch_cache_control(
-                        response,
-                        max_age=0,
-                        must_revalidate=True,
-                        private=True,
-                    )
+                if no_cache:
+                    patch_cache_control(response, no_cache=True, private=True)
                 else:
                     patch_cache_control(response, max_age=max_age)
                 break
