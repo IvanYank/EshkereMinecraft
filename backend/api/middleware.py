@@ -11,7 +11,7 @@ class CacheControlMiddleware:
     CACHED_GET_PATHS = (
         ('/api/events', 10800, False),
         ('/api/news', 10800, False),
-        ('/api/users', 10800, True),
+        ('/api/users/', 10800, True),
     )
 
     def __init__(self, get_response):
