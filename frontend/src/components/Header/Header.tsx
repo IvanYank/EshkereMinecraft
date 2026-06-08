@@ -168,7 +168,7 @@ export default function Header() {
             <li className={styles.navigationElement}>
               <button type="button"
                 className={styles.link}
-                onClick={() => { window.location.href = "https://cubethrone.fun/installer/CubeThrone_v6.exe" }}>
+                onClick={() => { window.location.href = "https://cubethrone.fun/installer/CubeThrone.exe" }}>
                 Лаунчер
               </button>
             </li>
