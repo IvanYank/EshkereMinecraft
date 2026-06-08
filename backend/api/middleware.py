@@ -3,16 +3,16 @@ from django.utils.cache import patch_cache_control
 
 class CacheControlMiddleware:
     """
-    Добавляет заголовок Cache-Control только для разрешённых GET-запросов.
-    Кешируемые эндпоинты и время жизни заданы в кортеже CACHED_GET_PATHS.
+    Добавляет заголовок Cache-Control для разрешённых GET-запросов.
+    Формат: (путь_или_префикс, время_в_секундах, no_cache)
+    Если no_cache=True — max-age не ставится, только проверка по ETag.
     """
 
-    # Кортеж (путь_или_префикс, время_в_секундах)
     CACHED_GET_PATHS = (
-        ('/api/events', 10800),       # 3 часа
-        ('/api/news', 10800),         # 3 часа
-        ('/api/users/', 10800),       # только GET /api/users/
-        ('/api/users/my_tokens', 10800),
+        ('/api/events', 10800, False),
+        ('/api/news', 10800, False),
+        ('/api/users/', 0, True),
+        ('/api/users/my_tokens', 0, True),
     )
 
     def __init__(self, get_response):
@@ -24,9 +24,12 @@ class CacheControlMiddleware:
         if request.method != 'GET':
             return response
 
-        for path_prefix, max_age in self.CACHED_GET_PATHS:
+        for path_prefix, max_age, no_cache in self.CACHED_GET_PATHS:
             if request.path.startswith(path_prefix):
-                patch_cache_control(response, max_age=max_age)
+                if no_cache:
+                    patch_cache_control(response, no_cache=True)
+                else:
+                    patch_cache_control(response, max_age=max_age)
                 break
 
         return response
