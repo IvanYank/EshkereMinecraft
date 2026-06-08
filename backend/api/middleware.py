@@ -27,7 +27,7 @@ class CacheControlMiddleware:
         for path_prefix, max_age, no_cache in self.CACHED_GET_PATHS:
             if request.path.startswith(path_prefix):
                 if no_cache:
-                    patch_cache_control(response, no_cache=True)
+                    patch_cache_control(response, no_cache=True, private=True)
                 else:
                     patch_cache_control(response, max_age=max_age)
                 break
