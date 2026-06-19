@@ -111,24 +111,58 @@ class SiteUserViewSet(viewsets.ModelViewSet):
         nickname = serializer.validated_data['nickname']
         password = serializer.validated_data['password']
 
+        # 1. Проверяем наличие и активность токена регистрации ДО создания пользователя
+        token_value = serializer.validated_data.get('token')
+        if not token_value:
+            return Response(
+                {'error': 'Токен регистрации обязателен'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            token_obj = Token.objects.get(token=token_value, active=True)
+        except Token.DoesNotExist:
+            return Response(
+                {'error': 'Недействительный токен регистрации'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # 2. Проверяем, не занят ли ник в AuthMe
         if check_authme_user_exists(nickname):
             return Response(
                 {'error': 'Ник уже занят на сервере'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # 3. Создаём пользователя в Django
         user = serializer.save()
         ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
 
-        if not create_authme_user(
-            username=nickname, password=password, ip=ip
-        ):
+        # 4. Создаём пользователя в AuthMe
+        if not create_authme_user(username=nickname, password=password, ip=ip):
             user.delete()
             return Response(
                 {'error': 'Ошибка создания аккаунта'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+        # 5. Деактивируем токен (теперь он точно валиден, так как мы проверили)
+        try:
+            token_obj.deactivate(user)  # или token_obj.active = False; token_obj.save()
+        except Exception as e:
+            # Если деактивация не удалась – откатываем всё
+            user.delete()
+            try:
+                from .authme import delete_authme_user
+                delete_authme_user(nickname)
+            except ImportError:
+                pass
+            return Response(
+                {'error': 'Ошибка активации аккаунта'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # 6. Успех – выдаём токены и ответ
         tokens = get_tokens_for_user(user)
         response_data = self._build_user_response(user, tokens, include_urls=False)
         response = Response(response_data, status=status.HTTP_201_CREATED)
