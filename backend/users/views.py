@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.conf import settings
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -39,7 +40,50 @@ class SiteUserViewSet(viewsets.ModelViewSet):
             return LoginSerializer
         return SiteUserSerializer
 
-    # --- cookie helpers ---
+    def _get_user_from_request(self, request):
+        """Извлекает пользователя из Bearer-токена в заголовке.
+        Возвращает (user, None) при успехе, иначе (None, Response) с ошибкой.
+        """
+        header = request.headers.get('Authorization', '')
+        if not header.startswith('Bearer '):
+            return None, Response(
+                {'error': 'Token required'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        user = get_user_from_token(header[7:])
+        if not user:
+            return None, Response(
+                {'error': 'Invalid token'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        return user, None
+
+    def _check_vip(self, user):
+        """Проверяет, является ли пользователь VIP. Возвращает Response с ошибкой или None."""
+        if not user.vip_status:
+            return Response(
+                {'error': 'Только для VIP'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        return None
+
+    def _build_user_response(self, user, tokens, include_urls=False):
+        data = {
+            'id': user.id,
+            'nickname': user.nickname,
+            'vip_status': user.vip_status,
+            'avatar': user.avatar.url if user.avatar else None,
+        }
+        if include_urls:
+            urls_data = VipUrlSerializer(
+                VipUrl.objects.filter(vip=user),
+                many=True
+            ).data
+            data['urls'] = urls_data
+        return {
+            'user': data,
+            'access': tokens['access'],
+        }
 
     def _set_refresh_cookie(self, response, token):
         response.set_cookie(
@@ -47,7 +91,7 @@ class SiteUserViewSet(viewsets.ModelViewSet):
             value=token,
             max_age=timedelta(days=7),
             httponly=True,
-            secure=False,
+            secure=getattr(settings, 'SECURE_COOKIE', False),
             samesite='Lax',
             path='/api/users/refresh/',
         )
@@ -85,23 +129,9 @@ class SiteUserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-        if hasattr(user, '_pending_token'):
-            user._pending_token.deactivate(user)
-
         tokens = get_tokens_for_user(user)
-        response = Response(
-            {
-                'user': {
-                    'id': user.id,
-                    'nickname': user.nickname,
-                    'vip_status': user.vip_status,
-                    'avatar': user.avatar.url if user.avatar else None,
-                },
-                'access': tokens['access'],
-            },
-            status=status.HTTP_201_CREATED,
-        )
-
+        response_data = self._build_user_response(user, tokens, include_urls=False)
+        response = Response(response_data, status=status.HTTP_201_CREATED)
         self._set_refresh_cookie(response, tokens['refresh'])
         return response
 
@@ -134,23 +164,8 @@ class SiteUserViewSet(viewsets.ModelViewSet):
             )
 
         tokens = get_tokens_for_user(user)
-        urls_data = VipUrlSerializer(
-            VipUrl.objects.filter(vip=user),
-            many=True
-        ).data
-        response = Response(
-            {
-                'user': {
-                    'id': user.id,
-                    'nickname': user.nickname,
-                    'vip_status': user.vip_status,
-                    'avatar': user.avatar.url if user.avatar else None,
-                    'urls': urls_data,
-                },
-                'access': tokens['access'],
-            }
-        )
-
+        response_data = self._build_user_response(user, tokens, include_urls=True)
+        response = Response(response_data)
         self._set_refresh_cookie(response, tokens['refresh'])
         return response
 
@@ -184,37 +199,16 @@ class SiteUserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def me(self, request):
-        header = request.headers.get('Authorization', '')
-        if not header.startswith('Bearer '):
-            return Response(
-                {'error': 'Token required'},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        user = get_user_from_token(header[7:])
-        if not user:
-            return Response(
-                {'error': 'Invalid token'},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
         return Response(self.get_serializer(user).data)
 
     @action(detail=False, methods=['post'])
     def change_password(self, request):
-        header = request.headers.get('Authorization', '')
-        if not header.startswith('Bearer '):
-            return Response(
-                {'error': 'Token required'},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        user = get_user_from_token(header[7:])
-        if not user:
-            return Response(
-                {'error': 'Invalid token'},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
 
         serializer = ChangePasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -227,32 +221,29 @@ class SiteUserViewSet(viewsets.ModelViewSet):
 
         new_password = serializer.validated_data['new_password']
 
-        # Меняем пароль в Django
-        user.set_password(new_password)
-        user.save()
-
-        # Меняем пароль в AuthMe
+        # Сначала меняем пароль в AuthMe
         if not change_authme_password(user.nickname, new_password):
             return Response(
                 {'error': 'Ошибка смены пароля на сервере'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
+        # Затем меняем пароль в Django
+        user.set_password(new_password)
+        user.save()
+
         return Response({'message': 'Пароль изменён'})
 
     @action(detail=False, methods=['patch'])
     def avatar(self, request):
         """Смена аватарки — только для VIP"""
-        header = request.headers.get('Authorization', '')
-        if not header.startswith('Bearer '):
-            return Response({'error': 'Token required'}, status=401)
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
 
-        user = get_user_from_token(header[7:])
-        if not user:
-            return Response({'error': 'Invalid token'}, status=401)
-
-        if not user.vip_status:
-            return Response({'error': 'Только для VIP'}, status=403)
+        vip_error = self._check_vip(user)
+        if vip_error:
+            return vip_error
 
         serializer = AvatarSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -263,16 +254,13 @@ class SiteUserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def my_tokens(self, request):
         """Список активных токенов пользователя — только для VIP"""
-        header = request.headers.get('Authorization', '')
-        if not header.startswith('Bearer '):
-            return Response({'error': 'Token required'}, status=401)
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
 
-        user = get_user_from_token(header[7:])
-        if not user:
-            return Response({'error': 'Invalid token'}, status=401)
-
-        if not user.vip_status:
-            return Response({'error': 'Только для VIP'}, status=403)
+        vip_error = self._check_vip(user)
+        if vip_error:
+            return vip_error
 
         tokens = Token.objects.filter(owner=user, active=True)
         serializer = TokenListSerializer(tokens, many=True)
@@ -280,47 +268,53 @@ class SiteUserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get', 'post', 'delete'])
     def vip_urls(self, request):
-        """Управление ссылками VIP"""
         if request.method == 'GET':
-            vip_id = request.query_params.get('id')
-            if vip_id:
-                try:
-                    vip = SiteUser.objects.get(id=vip_id, vip_status=True)
-                except SiteUser.DoesNotExist:
-                    return Response({'error': 'VIP not found'}, status=404)
-                urls = VipUrl.objects.filter(vip=vip)
-                return Response(
-                    {
-                        'nickname': vip.nickname,
-                        'urls': VipUrlSerializer(urls, many=True).data,
-                    }
-                )
-            else:
-                return Response({'error': 'id required'}, status=400)
+            return self._handle_get_vip_urls(request)
+        elif request.method == 'POST':
+            return self._handle_post_vip_urls(request)
+        elif request.method == 'DELETE':
+            return self._handle_delete_vip_urls(request)
 
-        # POST и DELETE — только для своего профиля
-        header = request.headers.get('Authorization', '')
-        if not header.startswith('Bearer '):
-            return Response({'error': 'Token required'}, status=401)
+    def _handle_get_vip_urls(self, request):
+        vip_id = request.query_params.get('id')
+        if not vip_id:
+            return Response({'error': 'id required'}, status=400)
+        try:
+            vip = SiteUser.objects.get(id=vip_id, vip_status=True)
+        except SiteUser.DoesNotExist:
+            return Response({'error': 'VIP not found'}, status=404)
+        urls = VipUrl.objects.filter(vip=vip)
+        return Response({
+            'nickname': vip.nickname,
+            'urls': VipUrlSerializer(urls, many=True).data,
+        })
 
-        user = get_user_from_token(header[7:])
-        if not user or not user.vip_status:
-            return Response({'error': 'Только для VIP'}, status=403)
+    def _handle_post_vip_urls(self, request):
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
+        vip_error = self._check_vip(user)
+        if vip_error:
+            return vip_error
+        serializer = VipUrlCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(vip=user)
+        return Response(serializer.data, status=201)
 
-        if request.method == 'POST':
-            serializer = VipUrlCreateSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(vip=user)
-            return Response(serializer.data, status=201)
-
-        if request.method == 'DELETE':
-            url_id = request.data.get('id')
-            if not url_id:
-                return Response({'error': 'id required'}, status=400)
-            deleted, _ = VipUrl.objects.filter(id=url_id, vip=user).delete()
-            if not deleted:
-                return Response({'error': 'Not found'}, status=404)
-            return Response({'message': 'Deleted'})
+    def _handle_delete_vip_urls(self, request):
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
+        vip_error = self._check_vip(user)
+        if vip_error:
+            return vip_error
+        url_id = request.data.get('id')
+        if not url_id:
+            return Response({'error': 'id required'}, status=400)
+        deleted, _ = VipUrl.objects.filter(id=url_id, vip=user).delete()
+        if not deleted:
+            return Response({'error': 'Not found'}, status=404)
+        return Response({'message': 'Deleted'})
 
     @action(detail=False, methods=['get'])
     def streamers(self, request):
