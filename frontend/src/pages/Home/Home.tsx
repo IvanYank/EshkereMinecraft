@@ -9,8 +9,12 @@ import 'swiper/css';
 
 import { Event, News, SlideUser, User } from './types';
 import MembersSlide from '@/components/MembersSlide';
-import slideImage from "@/assets/slide.webp"
 import Slide from '@/components/Slide';
+
+import slide1 from "@/assets/slide1.webp"
+import slide2 from "@/assets/slide2.webp"
+import slide3 from "@/assets/slide3.webp"
+import slide4 from "@/assets/slide4.webp"
 
 import styles from "./Home.module.scss"
 
@@ -65,10 +69,12 @@ export default function Home() {
 
   const mainSliderSlides = [
     {
+      image: slide1,
       title: "Эпические сражения за территории",
       text: `Осады крепостей, полевые битвы и борьба за контроль над провинциями — здесь каждая схватка меняет баланс сил. Сражайся за свои земли, захватывай новые территории и отбивай атаки врагов. Тактика, координация и умение держать удар решают исход войны. Твоя держава растёт с каждой победой.`,
     },
     {
+      image: slide2,
       title: "Найди свой путь в CubeThrone",
       text: `Выберите одну из четырёх профессий:
 ⚔️ Воин — идите в бой, захватывайте территории
@@ -79,10 +85,12 @@ export default function Home() {
 Каждая профессия — это уникальные механики и свой вклад в победу!`,
     },
     {
+      image: slide3,
       title: "Интриги, заговоры и экономика",
       text: `Политика — это не только войны! Создавай тайные союзы, веди хитрую торговлю и плети заговоры против соседей. Сегодня ты союзник, а завтра — коварный предатель с ножом в спине (буквально)`,
     },
     {
+      image: slide4,
       title: "Начни свою историю прямо сейчас!",
       text: `Ты всё ещё здесь? Серьёзно? Пока ты читаешь этот текст, другие игроки уже захватывают территории, строят империи и становятся легендами!`,
     },
@@ -179,7 +187,7 @@ export default function Home() {
               mainSliderSlides.map(slide => {
                 return (
                   <SwiperSlide>
-                    <Slide title={slide.title} imageUrl={slideImage} text={slide.text} />
+                    <Slide title={slide.title} imageUrl={slide.image} text={slide.text} />
                   </SwiperSlide>
                 )
               })
@@ -208,7 +216,7 @@ export default function Home() {
               pagination={{
                 type: 'progressbar',
               }}
-              // autoplay
+              autoplay
               breakpoints={{
                 910: {
                   slidesPerView: 2,

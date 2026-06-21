@@ -12,7 +12,7 @@ export default function Slide({ title, imageUrl, text}: SlideProps) {
         </div>
       </div>
       <div className={styles.image}>
-        <img loading="lazy" src={imageUrl} alt="Slide" />
+        <img src={imageUrl} alt="Slide" />
       </div>
     </div>
   );
