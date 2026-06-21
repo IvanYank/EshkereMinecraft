@@ -57,6 +57,28 @@ services:
     networks:
       - yea_network
 
+  bluemap_php:
+    image: php:8.2-fpm
+    container_name: yea_bluemap_php
+    volumes:
+      - ../bluemap/web:/var/www/html
+      - ../bluemap/php/conf.d:/usr/local/etc/php/conf.d
+    networks:
+      - yea_network
+    environment:
+      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
+      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT}
+      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
+      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
+      - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
+    command: >
+      sh -c "
+      docker-php-ext-install mysqli pdo_mysql &&
+      docker-php-ext-enable mysqli pdo_mysql &&
+      php-fpm
+      "
+    restart: unless-stopped
+
   gateway:
     build:
       context: ../gateway
@@ -70,6 +92,7 @@ services:
       - media_volume:/app/media
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /opt/data:/app/installer:ro
+      - ../bluemap/web:/var/www/bluemap:ro
     depends_on:
       - backend
       - frontend
@@ -78,6 +101,7 @@ services:
 
 volumes:
   postgres_data:
+  postgres_map_data:
   static_volume:
   media_volume:
 
