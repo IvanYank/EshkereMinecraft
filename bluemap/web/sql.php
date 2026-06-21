@@ -9,6 +9,13 @@ $username = getenv('BLUEMAP_DB_USER') ?: 'root';
 $password = getenv('BLUEMAP_DB_PASSWORD') ?: '';
 $database = getenv('BLUEMAP_DB_NAME') ?: 'bluemap';
 
+error_log("=== SQL DEBUG ===");
+error_log("mapId: " . $mapId);
+error_log("mapPath: " . $mapPath);
+error_log("storage: " . $storage);
+error_log("tileX: " . $tileX);
+error_log("tileZ: " . $tileZ);
+error_log("SQL: SELECT d.data, c.key FROM bluemap_grid_storage_data d INNER JOIN bluemap_map m ON d.map = m.id INNER JOIN bluemap_grid_storage s ON d.storage = s.id INNER JOIN bluemap_compression c ON d.compression = c.id WHERE m.map_id = '$mapId' AND s.key = '$storage' AND d.x = $tileX AND d.z = $tileZ");
 // !!! END - DONT CHANGE ANYTHING AFTER THIS LINE !!!
 
 
