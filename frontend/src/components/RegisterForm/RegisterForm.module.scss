@@ -1,0 +1,16 @@
+.checkboxWithRules {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxWithRules input {
+  margin-top: 2px;
+}
+
+.checkboxWithRules a {
+  color: #3b82f6;
+  text-decoration: underline;
+}

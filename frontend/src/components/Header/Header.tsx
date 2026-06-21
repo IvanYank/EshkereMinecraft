@@ -172,8 +172,11 @@ export default function Header() {
                 Лаунчер
               </button>
             </li>
-            <li className={styles.navigationElement}>
+            {/* <li className={styles.navigationElement}>
               <Link className={styles.link} to="/map">Карта</Link>
+            </li> */}
+            <li className={styles.navigationElement}>
+              <Link className={styles.link} to="/rules">Правила</Link>
             </li>
           </ul>
         </nav>

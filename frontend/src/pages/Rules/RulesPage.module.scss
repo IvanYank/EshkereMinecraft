@@ -1,0 +1,64 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+
+  background-color: #0E0E10;
+  position: relative;
+  z-index: 0;
+
+  &:before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: #1e1e1e5d;
+    -webkit-mask-image: url("@/assets/background.svg");
+    mask-image: url("@/assets/background.svg");
+    mask-repeat: repeat;
+    mask-size: 120px 100px;
+    z-index: -1;
+  }
+}
+
+.content {
+  max-width: 1480px;
+  padding: 40px 20px 40px;
+  margin: 0 auto;
+  overflow: auto;
+}
+
+
+.description {
+  &Title {
+    margin-bottom: 24px;
+    color: $secondary-color;
+  }
+
+  &Text {
+    font-size: 21px;
+    text-align: center;
+  }
+}
+
+.rulesTitle {
+  margin-bottom: 44px;
+  color: $secondary-color;
+}
+
+.rulesText {
+  white-space: pre-line;
+  font-size: 21px;
+  line-height: 1.6;
+  max-width: 1200px;
+}
+
+@media(max-width:910px) {
+  .rulesTitle {
+    font-size: 26px;
+  }
+
+  .rulesText {
+    font-size: 18px;
+  }
+}

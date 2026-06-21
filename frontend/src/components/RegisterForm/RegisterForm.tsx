@@ -1,7 +1,10 @@
 import { useState } from "react"
+import { Link } from "react-router"
 
 import FormLayout from "@/layout/FormLayout"
 import FormInput from "../FormInput"
+
+import styles from "./RegisterForm.module.scss"
 
 const errorListInitialState = {
   nickname: "",
@@ -16,6 +19,7 @@ export default function RegisterForm({
   setIsAuth
 }: RegisterFormProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [rulesIsChecked, setRulesIsChecked] = useState(false)
 
   const [formValues, setFormValues] = useState({
     nickname: "",
@@ -68,6 +72,19 @@ export default function RegisterForm({
         ...prev,
         token: "Поле должно быть заполнено"
       }))
+    }
+
+    if (formValues.password !== formValues.passwordSecond) {
+      errorStatus = false
+
+      setErrorList(prev => ({
+        ...prev,
+        passwordSecond: "Пароли не совпадают"
+      }))
+    }
+
+    if (!rulesIsChecked) {
+      errorStatus = false
     }
 
     return errorStatus
@@ -171,6 +188,17 @@ export default function RegisterForm({
         onChange={formValuesChange}
         disabled={isLoading}
       />
+      <label className={styles.checkboxWithRules}>
+        <input
+          type="checkbox"
+          checked={rulesIsChecked}
+          onChange={(e) => setRulesIsChecked(e.target.checked)}
+        />
+        <span>
+          Я ознакомился с{" "}
+          <Link className="" to="/rules" target="_blank">правилами</Link>
+        </span>
+      </label>
     </FormLayout>
   )
 }

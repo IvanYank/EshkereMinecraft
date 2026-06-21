@@ -115,14 +115,13 @@ export default function Home() {
   };
 
   const getUsers = async () => {
-    const response = await fetch("/api/users/")
+    const response = await fetch("/api/users/streamers/")
 
     if (response.ok) {
       const out = await response.json()
       const slidesPerView = getSlidesPerView()
 
-      let users = out.results
-        .filter((user: User) => user.vip_status)
+      let users = out
         .map((user: User, i: number) => {
           return {
             id: i % slidesPerView,
