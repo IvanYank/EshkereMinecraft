@@ -216,6 +216,7 @@ export default function Home() {
               pagination={{
                 type: 'progressbar',
               }}
+              loop
               autoplay
               breakpoints={{
                 910: {
