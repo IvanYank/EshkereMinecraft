@@ -57,27 +57,30 @@ services:
     networks:
       - yea_network
 
-  bluemap_php:
-    image: php:8.2-fpm
-    container_name: yea_bluemap_php
+  bluemap:
+    image: ghcr.io/bluemap-minecraft/bluemap:v5.4
+    container_name: yea_bluemap
+    restart: unless-stopped
+    command: -w  # Только веб-сервер (без рендеринга)
+    ports:
+      - "8100:8100"  # Внутренний порт BlueMap
     volumes:
-      - ../bluemap/web:/var/www/html
-      - ../bluemap/php/conf.d:/usr/local/etc/php/conf.d
-    networks:
-      - yea_network
+      - ../bluemap/config:/app/config
+      - ../bluemap/data:/app/data
+      - ../bluemap/web:/app/web
     environment:
+      # Java опции
+      - JAVA_OPTS=-Xmx512M -Xms256M
+      # Данные для подключения к БД разработчика
       - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
       - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT}
       - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
       - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
       - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
-    command: >
-      sh -c "
-      docker-php-ext-install mysqli pdo_mysql &&
-      docker-php-ext-enable mysqli pdo_mysql &&
-      php-fpm
-      "
-    restart: unless-stopped
+    networks:
+      - yea_network
+    depends_on:
+      - db
 
   gateway:
     build:
