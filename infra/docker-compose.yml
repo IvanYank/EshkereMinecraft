@@ -57,7 +57,24 @@ services:
     networks:
       - yea_network
 
-
+  bluemap:
+    image: bluemap/bluemap:latest
+    container_name: yea_bluemap
+    volumes:
+      - ../bluemap:/app/data
+    environment:
+      - BLUEMAP_DB_HOST=db
+      - BLUEMAP_DB_PORT=5432
+      - BLUEMAP_DB_USER=${POSTGRES_USER}
+      - BLUEMAP_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - BLUEMAP_DB_NAME=${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - yea_network
+    ports:
+      - "8100:8100"  
   gateway:
     build:
       context: ../gateway
@@ -71,7 +88,7 @@ services:
       - media_volume:/app/media
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /opt/data:/app/installer:ro
-      - ../bluemap/web:/var/www/bluemap:ro
+      - ./bluemap-nginx.conf:/etc/nginx/conf.d/bluemap.conf:ro
     depends_on:
       - backend
       - frontend
@@ -80,7 +97,6 @@ services:
 
 volumes:
   postgres_data:
-  postgres_map_data:
   static_volume:
   media_volume:
 
