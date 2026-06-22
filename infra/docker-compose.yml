@@ -58,22 +58,27 @@ services:
       - yea_network
 
   bluemap:
-    image: your-bluemap-image
-    container_name: bluemap
-    restart: unless-stopped
+    image: ghcr.io/bluecolored/bluemap:latest
+    container_name: yea_bluemap
     ports:
-      - "8100:8100"
+      - "8100:8100"  # Порт для доступа к BlueMap
     volumes:
-      - ../bluemap:/var/www/html  # или путь к вашей установке
+      - ../bluemap:/bluemap:rw  # Монтируем всю папку bluemap для доступа к конфигам и данным
     environment:
-      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
-      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT}
-      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
-      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
-      - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
-      - BLUEMAP_DB_DRIVER=mysql
+      # Переменные для подключения к базе данных
+      - DB_HOST=${BLUEMAP_DB_HOST}
+      - DB_PORT=${BLUEMAP_DB_PORT}
+      - DB_USER=${BLUEMAP_DB_USER}
+      - DB_NAME=${BLUEMAP_DB_NAME}
+      - DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
+      # Дополнительные переменные для BlueMap
+      - WEB_PORT=8100
+      - WEB_IP=0.0.0.0
+    depends_on:
+      - db
     networks:
-      - app-network
+      - yea_network
+    restart: unless-stopped
   gateway:
     build:
       context: ../gateway
@@ -91,6 +96,7 @@ services:
     depends_on:
       - backend
       - frontend
+      - bluemap
     networks:
       - yea_network
 
