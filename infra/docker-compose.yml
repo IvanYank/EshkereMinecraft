@@ -58,30 +58,24 @@ services:
       - yea_network
 
   bluemap:
-    image: ghcr.io/bluemap-minecraft/bluemap:latest
-    container_name: yea_bluemap
-    volumes:
-      - ../bluemap/config:/app/config
-      - ../bluemap/data:/app/data
-      - ../bluemap/maps:/app/maps
-      - ../bluemap/world:/app/world
-      - ../bluemap/web:/app/web
-    environment:
-      - BLUEMAP_DB_HOST=db
-      - BLUEMAP_DB_PORT=5432
-      - BLUEMAP_DB_USER=${POSTGRES_USER}
-      - BLUEMAP_DB_PASSWORD=${POSTGRES_PASSWORD}
-      - BLUEMAP_DB_NAME=${POSTGRES_DB}
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - yea_network
-    ports:
-      - "8100:8100"
-    # ГЛАВНОЕ: запускаем веб-сервер
-    command: ["-w", "-c", "/app/config"]
-
+  image: ghcr.io/bluemap-minecraft/bluemap:latest
+  container_name: yea_bluemap
+  volumes:
+    - ../bluemap:/app/data
+  environment:
+    - BLUEMAP_DB_HOST=db
+    - BLUEMAP_DB_PORT=5432
+    - BLUEMAP_DB_USER=${POSTGRES_USER}
+    - BLUEMAP_DB_PASSWORD=${POSTGRES_PASSWORD}
+    - BLUEMAP_DB_NAME=${POSTGRES_DB}
+  depends_on:
+    db:
+      condition: service_healthy
+  networks:
+    - yea_network
+  ports:
+    - "8100:8100"
+  command: ["-w"]
   gateway:
     build:
       context: ../gateway
