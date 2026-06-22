@@ -75,7 +75,7 @@ services:
       - yea_network
     ports:
       - "8100:8100"
-    command: ["-r", "-w", "-a", "-c", "/app/data"]
+    command: ["-r", "-w", "-c", "/app/data"]
   gateway:
     build:
       context: ../gateway
