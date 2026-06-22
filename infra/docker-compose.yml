@@ -57,20 +57,19 @@ services:
     networks:
       - yea_network
 
-  bluemap:
+    bluemap:
     image: ghcr.io/bluemap-minecraft/bluemap:latest
     container_name: yea_bluemap
     volumes:
       - ../bluemap:/app/data
+    env_file:
+      - ./.env
     environment:
-      - BLUEMAP_DB_HOST=db
-      - BLUEMAP_DB_PORT=5432
-      - BLUEMAP_DB_USER=${POSTGRES_USER}
-      - BLUEMAP_DB_PASSWORD=${POSTGRES_PASSWORD}
-      - BLUEMAP_DB_NAME=${POSTGRES_DB}
-    depends_on:
-      db:
-        condition: service_healthy
+      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
+      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT}
+      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
+      - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
+      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
     networks:
       - yea_network
     ports:
