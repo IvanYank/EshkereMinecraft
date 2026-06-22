@@ -64,8 +64,8 @@ services:
     ports:
       - "${BLUEMAP_WEB_PORT:-8100}:8100"
     volumes:
-      - ./bluemap/config:/app/config:ro
-      - ./bluemap/web:/app/web:ro
+      - ../bluemap/config:/app/config:ro    # <-- Изменено!
+      - ../bluemap/web:/app/web:ro     
     environment:
       # Для PostgreSQL используем правильные переменные
       - BLUEMAP_DB_HOST={BLUEMAP_DB_HOST}  # Используем имя сервиса из docker-compose
