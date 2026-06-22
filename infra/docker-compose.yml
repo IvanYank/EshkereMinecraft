@@ -96,7 +96,6 @@ services:
       - media_volume:/app/media
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /opt/data:/app/installer:ro
-      - ./bluemap-nginx.conf:/etc/nginx/conf.d/bluemap.conf:ro
     depends_on:
       - backend
       - frontend
