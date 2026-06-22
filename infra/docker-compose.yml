@@ -74,7 +74,7 @@ services:
       - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
       - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
     # Запускаем только веб-сервер
-    command: ["-w", "-c", "/app/config"]
+    command: ["-w", "-c", "/app/config", "-m", "world"]
     depends_on:
       db:
         condition: service_healthy
