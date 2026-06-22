@@ -92,6 +92,7 @@ services:
       - media_volume:/app/media
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /opt/data:/app/installer:ro
+      - ../bluemap:/var/www/bluemap
     depends_on:
       - backend
       - frontend
