@@ -60,25 +60,22 @@ services:
   bluemap:
     image: ghcr.io/bluemap-minecraft/bluemap:v5.20
     container_name: yea_bluemap
-    restart: unless-stopped
+    restart: always
     command: -r -u -w
-    ports:
-      - "8100:8100"
-    volumes:
-      - ../bluemap/config:/app/config:rw
-      - ../bluemap/web:/app/web:rw
-      - ../bluemap/data:/app/data:rw
+    env_file:
+      - ./.env  # Подключаем .env файл
     environment:
-      # Переменные для подключения к MySQL
-      - DB_HOST=${BLUEMAP_DB_HOST}
-      - DB_PORT=${BLUEMAP_DB_PORT}
-      - DB_USER=${BLUEMAP_DB_USER}
-      - DB_NAME=${BLUEMAP_DB_NAME}
-      - DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
-      # Дополнительные настройки для MySQL
-      - DB_DRIVER=mysql
-    depends_on:
-      - db
+      # Явно прокидываем переменные для BlueMap
+      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
+      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT}
+      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
+      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
+      - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
+    volumes:
+      - ../bluemap/config:/app/config
+      - ../bluemap/web:/app/web
+      - ../bluemap/world:/app/world:ro
+      - ../bluemap/data:/app/data
     networks:
       - yea_network
   gateway:
@@ -97,7 +94,6 @@ services:
     depends_on:
       - backend
       - frontend
-      - bluemap
     networks:
       - yea_network
 
