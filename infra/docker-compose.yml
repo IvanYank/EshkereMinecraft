@@ -62,20 +62,21 @@ services:
     container_name: yea_bluemap
     restart: always
     command: -r -u -w
+    ports:
+      - "8100:8100"
+    volumes:
+      - ../bluemap/config:/app/config
+      - ../bluemap/world:/app/world
+      - ../bluemap/data:/app/data
+      - ../bluemap/web:/app/web
     env_file:
-      - ./.env  # Подключаем .env файл
+      - ./.env
     environment:
-      # Явно прокидываем переменные для BlueMap
       - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
       - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT}
       - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
       - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
       - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
-    volumes:
-      - ../bluemap/config:/app/config
-      - ../bluemap/web:/app/web
-      - ../bluemap/world:/app/world:ro
-      - ../bluemap/data:/app/data
     networks:
       - yea_network
   gateway:
