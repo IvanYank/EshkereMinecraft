@@ -58,26 +58,55 @@ services:
       - yea_network
 
 # infra/docker-compose.yml
-  bluemap_web:
+  bluemap_render:
     image: ghcr.io/bluemap-minecraft/bluemap:v5.4
-    container_name: yea_bluemap_web
-    restart: unless-stopped
-    command: --webroot-only  # Режим только веб-сервер
-    ports:
-      - "8101:8100"
+    container_name: yea_bluemap_render
+    restart: "no"
+    command: -r  # Только рендеринг
     volumes:
       - ../bluemap/config:/app/config
       - ../bluemap/data:/app/data
+      - ../bluemap/world:/app/world:ro
     environment:
-      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
+      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST:-db}
+      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT:-5432}
       - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
       - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
       - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
     networks:
       - yea_network
     depends_on:
-      db_map:
+      db:
         condition: service_healthy
+
+  # Веб-сервер Nginx для PHP-проекта
+  bluemap_web:
+    image: nginx:alpine
+    container_name: yea_bluemap_web
+    restart: unless-stopped
+    volumes:
+      - ../bluemap/web:/usr/share/nginx/html  # ВСЯ папка web монтируется целиком
+      - ./bluemap-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - yea_network
+    depends_on:
+      - bluemap_php
+
+  # PHP-FPM для выполнения скриптов
+  bluemap_php:
+    image: php:8.2-fpm-alpine
+    container_name: yea_bluemap_php
+    restart: unless-stopped
+    volumes:
+      - ../bluemap/web:/usr/share/nginx/html  # ВСЯ папка web монтируется целиком
+    environment:
+      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST:-db}
+      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT:-5432}
+      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
+      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
+      - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
+    networks:
+      - yea_network
 
   gateway:
     build:
