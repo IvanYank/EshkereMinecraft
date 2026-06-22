@@ -57,26 +57,24 @@ services:
     networks:
       - yea_network
 
-  bluemap:
-    image: ghcr.io/bluemap-minecraft/bluemap:v5.16  # Используем стабильную версию
-    container_name: yea_bluemap
-    restart: unless-stopped
-    command: -r -u -w  # render, update, webserver
+  bluemap-web:
+    image: ghcr.io/bluemap-minecraft/bluemap:latest
+    container_name: bluemap-web
+    restart: always
     ports:
-      - "8100:8100"  # Порт для веб-интерфейса BlueMap
+      - "${BLUEMAP_WEB_PORT:-8100}:8100"
     volumes:
-      - ./bluemap/config:/app/config  # Конфигурация
-      - ./bluemap/data:/app/data      # Данные
-      - ./bluemap/web:/app/web        # Веб-файлы
-      # - ./worlds/overworld:/app/world  # Если мир локальный, раскомментировать
-    env_file:
-      - ./.env
+      - ./bluemap/config:/app/config:ro
+      - ./bluemap/web:/app/web:ro
     environment:
-      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST:-db}
-      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT:-5432}
-      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER:-${POSTGRES_USER}}
-      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME:-${POSTGRES_DB}}
-      - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD:-${POSTGRES_PASSWORD}}
+      # Для PostgreSQL используем правильные переменные
+      - BLUEMAP_DB_HOST={BLUEMAP_DB_HOST}  # Используем имя сервиса из docker-compose
+      - BLUEMAP_DB_PORT={BLUEMAP_DB_PORT}
+      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}  # Берем из .env
+      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
+      - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
+    # Запускаем только веб-сервер
+    command: ["java", "-jar", "cli.jar", "-w"]
     depends_on:
       db:
         condition: service_healthy
@@ -101,7 +99,7 @@ services:
     networks:
       - yea_network
     environment:
-      - BLUEMAP_URL=http://bluemap:8100
+      - BLUEMAP_URL=http://bluemap-web:8100
 
 volumes:
   postgres_data:
