@@ -57,11 +57,23 @@ services:
     networks:
       - yea_network
 
+  services:
   bluemap:
     image: ghcr.io/bluemap-minecraft/bluemap:v5.20
     container_name: yea_bluemap
     restart: always
-    command: -r -u -w
+    # Измененная команда с предварительной загрузкой ресурсов
+    command: >
+      sh -c "
+      if [ ! -f /app/web/index.html ]; then
+        echo 'Downloading resources...' &&
+        wget -q https://github.com/BlueMap-Minecraft/BlueMap/releases/latest/download/BlueMap-common.zip -O /tmp/resources.zip &&
+        unzip -q /tmp/resources.zip -d /app/web/ &&
+        rm /tmp/resources.zip &&
+        echo 'Resources downloaded!'
+      fi &&
+      java -jar /app/cli.jar -r -u -w
+      "
     ports:
       - "8100:8100"
     volumes:
