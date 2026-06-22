@@ -67,6 +67,7 @@ services:
       - ../bluemap/config:/app/config
       - ../bluemap/data:/app/data
       - ../bluemap/world:/app/world:ro
+      - ../bluemap/minecraft-client-1.21.11.jar:/app/minecraft-client-1.21.11.jar:ro
     environment:
       - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST:-db}
       - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT:-5432}
