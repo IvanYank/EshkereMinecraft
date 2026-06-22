@@ -2,12 +2,12 @@
 
 // !!! SET YOUR SQL-CONNECTION SETTINGS HERE: !!!
 
-$driver   = 'mysql';
-$hostname = getenv('BLUEMAP_DB_HOST') ?: '127.0.0.1';
-$port     = getenv('BLUEMAP_DB_PORT') ?: 3306;
-$username = getenv('BLUEMAP_DB_USER') ?: 'root';
-$password = getenv('BLUEMAP_DB_PASSWORD') ?: '';
-$database = getenv('BLUEMAP_DB_NAME') ?: 'bluemap';
+$driver   = 'mysql'; // 'mysql' (MySQL) or 'pgsql' (PostgreSQL)
+$hostname = getenv('BLUEMAP_DB_HOST') ?: '92.63.189.48';
+$port     = getenv('BLUEMAP_DB_PORT') ?: 3310;
+$username = getenv('BLUEMAP_DB_USER') ?: 'sdf';
+$password = getenv('BLUEMAP_DB_PASSWORD') ?: 'Ily*/MuN0G0fdsgd1ck';
+$database = getenv('BLUEMAP_DB_NAME') ?: 'fds';
 
 // !!! END - DONT CHANGE ANYTHING AFTER THIS LINE !!!
 
