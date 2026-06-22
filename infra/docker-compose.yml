@@ -57,29 +57,28 @@ services:
     networks:
       - yea_network
 
-  bluemap-web:
-    image: ghcr.io/bluemap-minecraft/bluemap:latest
-    container_name: bluemap-web
-    restart: always
-    ports:
-      - "${BLUEMAP_WEB_PORT:-8100}:8100"
+  bluemap_php:
+    image: php:7.4-fpm-alpine
+    container_name: bluemap_php
+    restart: unless-stopped
     volumes:
-      - ../bluemap/config:/app/config:ro    # <-- Изменено!
-      - ../bluemap/web:/app/web:ro     
+      - ../bluemap:/var/www/bluemap
     environment:
-      # Для PostgreSQL используем правильные переменные
-      - BLUEMAP_DB_HOST={BLUEMAP_DB_HOST}  # Используем имя сервиса из docker-compose
-      - BLUEMAP_DB_PORT={BLUEMAP_DB_PORT}
-      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}  # Берем из .env
+      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
+      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT}
+      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
       - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
       - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
-    # Запускаем только веб-сервер
-    command: ["-w", "-c", "/app/config", "-m", "world"]
-    depends_on:
-      db:
-        condition: service_healthy
+      - BLUEMAP_DB_DRIVER=${BLUEMAP_DB_DRIVER}
     networks:
       - yea_network
+    command: >
+      sh -c "
+        apk add --no-cache postgresql-dev &&
+        docker-php-ext-install pdo_mysql pdo_pgsql &&
+        php-fpm -F
+      "
+
   gateway:
     build:
       context: ../gateway
@@ -98,8 +97,6 @@ services:
       - frontend
     networks:
       - yea_network
-    environment:
-      - BLUEMAP_URL=http://bluemap-web:8100
 
 volumes:
   postgres_data:
