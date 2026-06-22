@@ -75,7 +75,7 @@ services:
       - yea_network
     ports:
       - "8100:8100"
-    command: ["-r", "-w", "--accept-resource-download"]
+    command: ["-r", "-w", "-a"]
   gateway:
     build:
       context: ../gateway
