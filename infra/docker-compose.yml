@@ -61,7 +61,11 @@ services:
     image: ghcr.io/bluemap-minecraft/bluemap:latest
     container_name: yea_bluemap
     volumes:
-      - ../bluemap:/app/data
+      - ../bluemap/config:/app/config
+      - ../bluemap/data:/app/data
+      - ../bluemap/maps:/app/maps
+      - ../bluemap/world:/app/world
+      - ../bluemap/web:/app/web
     environment:
       - BLUEMAP_DB_HOST=db
       - BLUEMAP_DB_PORT=5432
@@ -74,7 +78,10 @@ services:
     networks:
       - yea_network
     ports:
-      - "8100:8100"  
+      - "8100:8100"
+    # ГЛАВНОЕ: запускаем веб-сервер
+    command: ["-w", "-c", "/app/config"]
+
   gateway:
     build:
       context: ../gateway
