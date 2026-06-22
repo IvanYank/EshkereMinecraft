@@ -62,7 +62,7 @@ services:
     image: ghcr.io/bluemap-minecraft/bluemap:v5.4
     container_name: yea_bluemap_render
     restart: "no"
-    command: -r  # Только рендеринг
+    command: -r
     volumes:
       - ../bluemap/config:/app/config
       - ../bluemap/data:/app/data
@@ -85,8 +85,8 @@ services:
     container_name: yea_bluemap_web
     restart: unless-stopped
     volumes:
-      - ../bluemap/web:/usr/share/nginx/html  # ВСЯ папка web монтируется целиком
-      - ./bluemap-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ../bluemap/web:/usr/share/nginx/html
+      - ../gateway/bluemap-nginx.conf:/etc/nginx/conf.d/default.conf:ro  # <-- ПУТЬ К gateway
     networks:
       - yea_network
     depends_on:
@@ -98,7 +98,7 @@ services:
     container_name: yea_bluemap_php
     restart: unless-stopped
     volumes:
-      - ../bluemap/web:/usr/share/nginx/html  # ВСЯ папка web монтируется целиком
+      - ../bluemap/web:/usr/share/nginx/html
     environment:
       - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST:-db}
       - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT:-5432}
