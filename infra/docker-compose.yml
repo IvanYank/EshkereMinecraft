@@ -58,7 +58,7 @@ services:
       - yea_network
 
   bluemap:
-    image: bluemap/bluemap:latest
+    image: ghcr.io/bluemap-minecraft/bluemap:latest
     container_name: yea_bluemap
     volumes:
       - ../bluemap:/app/data
