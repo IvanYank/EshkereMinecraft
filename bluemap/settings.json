@@ -11,8 +11,8 @@
   "lowresSliderMax": 7000,
   "lowresSliderDefault": 2000,
   "lowresSliderMin": 500,
-  "mapDataRoot": "",
-  "liveDataRoot": "",
+  "mapDataRoot": "maps",
+  "liveDataRoot": "maps",
   "maps": ["world"],
   "scripts": [],
   "styles": []
