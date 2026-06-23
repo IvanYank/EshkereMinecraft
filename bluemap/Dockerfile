@@ -1,16 +1,27 @@
 FROM php:8.2-apache
 
-# Устанавливаем расширение PDO для MySQL
 RUN docker-php-ext-install pdo_mysql
-
-# Включаем mod_rewrite (на случай если понадобится)
 RUN a2enmod rewrite
 
-# Копируем файлы BlueMap в корень веб-сервера
 COPY . /var/www/html/
 
-# Настраиваем FallbackResource – все запросы к несуществующим файлам направляем на sql.php
-RUN echo 'FallbackResource /sql.php' >> /etc/apache2/apache2.conf
+# Создаём симлинк maps -> . (чтобы статика отдавалась)
+RUN ln -s . /var/www/html/maps
 
-# Опционально: меняем владельца на www-data (если нужно)
+# Добавляем конфигурацию в apache2.conf
+RUN echo '<Directory /var/www/html/>\n\
+    Options FollowSymLinks\n\
+    AllowOverride All\n\
+    Require all granted\n\
+    RewriteEngine On\n\
+    # Если запрос к /maps/имя_карты/ (с возможным слешем) – отдаём index.html\n\
+    RewriteRule ^maps/([^/]+)/?$ /index.html [L]\n\
+    # Если запрос к существующему файлу или папке – ничего не делаем\n\
+    RewriteCond %{REQUEST_FILENAME} -f [OR]\n\
+    RewriteCond %{REQUEST_FILENAME} -d\n\
+    RewriteRule ^ - [L]\n\
+    # Всё остальное (тайлы, мета-файлы) – передаём sql.php\n\
+    RewriteRule ^ /sql.php [L]\n\
+</Directory>' >> /etc/apache2/apache2.conf
+
 RUN chown -R www-data:www-data /var/www/html
