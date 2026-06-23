@@ -61,7 +61,8 @@ services:
     image: php:7.4-fpm-alpine
     container_name: yea_bluemap
     volumes:
-      - ../bluemap:/var/www/bluemap  # Папка с sql.php и index.html
+      # Монтируем папку с файлами BlueMap внутрь контейнера
+      - ../bluemap:/var/www/bluemap
     env_file:
       - ./.env
     environment:
@@ -73,11 +74,7 @@ services:
       - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
     networks:
       - yea_network
-    command: >
-      sh -c "
-      docker-php-ext-install pdo pdo_mysql &&
-      php-fpm -F
-      "
+    command: php-fpm -F
   gateway:
     build:
       context: ../gateway
@@ -91,6 +88,7 @@ services:
       - media_volume:/app/media
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /opt/data:/app/installer:ro
+      - ../bluemap:/var/www/bluemap:ro
     depends_on:
       - backend
       - frontend
