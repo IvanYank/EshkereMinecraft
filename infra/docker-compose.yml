@@ -57,7 +57,7 @@ services:
     networks:
       - yea_network
 
-bluemap:
+  bluemap:
     build:
       context: ../bluemap # Путь к папке с Dockerfile и sql.php
       dockerfile: Dockerfile
