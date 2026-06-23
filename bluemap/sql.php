@@ -148,6 +148,8 @@ if (startsWith($path, "/maps/")) {
     $pathParts = explode("/", substr($path, strlen("/maps/")), 2);
     $mapId = $pathParts[0];
     $mapPath = explode("?", $pathParts[1], 2)[0];
+    file_put_contents('/tmp/sql_debug.log', 'mapPath: ' . $mapPath . "\n", FILE_APPEND);
+    file_put_contents('/tmp/sql_debug.log', 'storage: ' . ($storage ?? 'null') . "\n", FILE_APPEND);
     if (isset($pathParts[1])) {
         $mapPath = explode("?", $pathParts[1], 2)[0];
     } else {
