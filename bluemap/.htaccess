@@ -5,5 +5,5 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Все остальные запросы к /maps/ направляем на sql.php
-RewriteRule ^maps/.*$ /sql.php [L]
+# Все остальные запросы направляем на sql.php
+RewriteRule ^ /sql.php [L]
