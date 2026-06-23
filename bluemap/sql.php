@@ -11,9 +11,13 @@ $database = getenv('BLUEMAP_DB_NAME') ?: 'bluemap';
 
 // !!! END - DONT CHANGE ANYTHING AFTER THIS LINE !!!
 
-file_put_contents('/tmp/sql_debug.log', date('Y-m-d H:i:s') . ' - ' . $_SERVER['REQUEST_URI'] . "\n", FILE_APPEND);
-header('X-Debug-Path: ' . $_SERVER['REQUEST_URI']);
-
+// Детальное логирование для отладки players
+file_put_contents('/tmp/sql_debug.log', 'REQUEST_URI: ' . $_SERVER['REQUEST_URI'] . "\n", FILE_APPEND);
+file_put_contents('/tmp/sql_debug.log', 'SCRIPT_NAME: ' . $_SERVER['SCRIPT_NAME'] . "\n", FILE_APPEND);
+file_put_contents('/tmp/sql_debug.log', 'PHP_SELF: ' . $_SERVER['PHP_SELF'] . "\n", FILE_APPEND);
+file_put_contents('/tmp/sql_debug.log', 'REQUEST_METHOD: ' . $_SERVER['REQUEST_METHOD'] . "\n", FILE_APPEND);
+file_put_contents('/tmp/sql_debug.log', 'QUERY_STRING: ' . ($_SERVER['QUERY_STRING'] ?? 'none') . "\n", FILE_APPEND);
+file_put_contents('/tmp/sql_debug.log', '---' . "\n", FILE_APPEND);
 // compression
 $compressionHeaderMap = [
     "bluemap:none" => null,
