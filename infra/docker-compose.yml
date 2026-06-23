@@ -61,7 +61,7 @@ services:
     image: php:7.4-fpm-alpine
     container_name: yea_bluemap
     volumes:
-      - ../bluemap:/var/www/html
+      - ../bluemap:/var/www/bluemap  # Папка с sql.php и index.html
     env_file:
       - ./.env
     environment:
