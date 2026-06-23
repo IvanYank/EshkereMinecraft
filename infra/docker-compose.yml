@@ -61,7 +61,6 @@ services:
     image: php:7.4-fpm-alpine
     container_name: yea_bluemap
     volumes:
-      # Монтируем папку с файлами BlueMap внутрь контейнера
       - ../bluemap:/var/www/bluemap
     env_file:
       - ./.env

@@ -10,8 +10,10 @@ $password = getenv('BLUEMAP_DB_PASSWORD') ?: '';
 $database = getenv('BLUEMAP_DB_NAME') ?: 'bluemap';
 
 // !!! END - DONT CHANGE ANYTHING AFTER THIS LINE !!!
-error_log("Request URI: " . $_SERVER['REQUEST_URI']);
-error_log("Path: " . $path);
+
+
+
+
 // compression
 $compressionHeaderMap = [
     "bluemap:none" => null,
@@ -103,8 +105,6 @@ function getMimeType($path) {
     if ($s !== false && $i < $s) return $mimeDefault;
 
     $suffix = substr($path, $i + 1);
-    // Удаляем возможные параметры запроса
-    $suffix = explode("?", $suffix)[0];
     if (isset($mimeTypes[$suffix]))
         return $mimeTypes[$suffix];
 
@@ -132,60 +132,10 @@ if ($path === "") {
 }
 
 // root => index.html
-// Обрабатываем корень сайта и корень папки maps
-if ($path === "/" || $path === "/maps/" || $path === "/maps") {
+if ($path === "/") {
     header("Content-Type: text/html");
-    echo file_get_contents("/var/www/bluemap/index.html");
+    echo file_get_contents("index.html");
     exit;
-}
-
-// Обработка файлов assets напрямую через nginx
-// Проверяем, является ли запрос к файлу в папке assets
-if (preg_match('#^/maps/([^/]+)/assets/(.+)$#', $path, $matches)) {
-    $mapId = $matches[1];
-    $assetPath = $matches[2];
-    
-    try {
-        $sql = new PDO("$driver:host=$hostname;port=$port;dbname=$database", $username, $password);
-        $sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-        $storage = "bluemap:asset/" . $assetPath;
-        
-        $statement = $sql->prepare("
-            SELECT d.data, c.key
-            FROM bluemap_item_storage_data d
-            INNER JOIN bluemap_map m ON d.map = m.id
-            INNER JOIN bluemap_item_storage s ON d.storage = s.id
-            INNER JOIN bluemap_compression c ON d.compression = c.id
-            WHERE m.map_id = :map_id AND s.key = :storage
-        ");
-        $statement->bindParam(':map_id', $mapId, PDO::PARAM_STR);
-        $statement->bindParam(':storage', $storage, PDO::PARAM_STR);
-        $statement->setFetchMode(PDO::FETCH_ASSOC);
-        $statement->execute();
-        
-        if ($line = $statement->fetch()) {
-            header("Cache-Control: public,max-age=86400");
-            $mimeType = getMimeType($assetPath);
-            header("Content-Type: " . $mimeType);
-            compressionHeader($line["key"]);
-            send($line["data"]);
-            exit;
-        }
-        
-        // Если не найдено в БД, пробуем найти физический файл
-        $physicalPath = "/var/www/bluemap/" . $assetPath;
-        if (file_exists($physicalPath)) {
-            header("Cache-Control: public,max-age=86400");
-            header("Content-Type: " . getMimeType($assetPath));
-            readfile($physicalPath);
-            exit;
-        }
-        
-    } catch (PDOException $e) { 
-        error_log($e->getMessage(), 0);
-        error(500, "Failed to fetch data");
-    }
 }
 
 if (startsWith($path, "/maps/")) {
@@ -200,7 +150,7 @@ if (startsWith($path, "/maps/")) {
         $sql = new PDO("$driver:host=$hostname;port=$port;dbname=$database", $username, $password);
         $sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e ) { 
-        error_log($e->getMessage(), 0);
+        error_log($e->getMessage(), 0); // Logs the detailed error message
         error(500, "Failed to connect to database");
     }
 
@@ -264,44 +214,37 @@ if (startsWith($path, "/maps/")) {
 
     // provide meta-files
     $storage = issetOrElse($metaFileKeys[$mapPath], null);
-    
-    // Исправление для assets файлов
-    if ($storage === null) {
-        $fullRelativePath = $mapId . "/" . $mapPath;
-        
-        if (startsWith($fullRelativePath, "assets/")) {
-            $storage = "bluemap:asset/" . substr($fullRelativePath, strlen("assets/"));
-        }
-    }
+    if ($storage === null && startsWith($mapPath, "assets/"))
+        $storage = "bluemap:asset/".substr($mapPath, strlen("assets/"));
 
     if ($storage !== null) {
         try {
             $statement = $sql->prepare("
-            SELECT d.data, c.key
-            FROM bluemap_item_storage_data d
-            INNER JOIN bluemap_map m
-            ON d.map = m.id
-            INNER JOIN bluemap_item_storage s
-            ON d.storage = s.id
-            INNER JOIN bluemap_compression c
-            ON d.compression = c.id
-            WHERE m.map_id = :map_id
-            AND s.key = :storage
+                SELECT d.data, c.key
+                FROM bluemap_item_storage_data d
+                INNER JOIN bluemap_map m
+                 ON d.map = m.id
+                INNER JOIN bluemap_item_storage s
+                 ON d.storage = s.id
+                INNER JOIN bluemap_compression c
+                 ON d.compression = c.id
+                WHERE m.map_id = :map_id
+                 AND s.key = :storage
             ");
             $statement->bindParam( ':map_id', $mapId, PDO::PARAM_STR );
             $statement->bindParam( ':storage', $storage, PDO::PARAM_STR );
             $statement->setFetchMode(PDO::FETCH_ASSOC);
             $statement->execute();
-            
+
             if ($line = $statement->fetch()) {
                 header("Cache-Control: public,max-age=86400");
-                $mimeType = getMimeType($mapPath);
-                header("Content-Type: " . $mimeType);
+                header("Content-Type: ".getMimeType($mapPath));
                 compressionHeader($line["key"]);
+
                 send($line["data"]);
                 exit;
             }
-        } catch (PDOException $e) {
+        } catch (PDOException $e) { 
             error_log($e->getMessage(), 0);
             error(500, "Failed to fetch data");
         }
