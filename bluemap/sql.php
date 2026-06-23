@@ -11,8 +11,8 @@ $database = getenv('BLUEMAP_DB_NAME') ?: 'bluemap';
 
 // !!! END - DONT CHANGE ANYTHING AFTER THIS LINE !!!
 
-
-
+file_put_contents('/tmp/sql_debug.log', date('Y-m-d H:i:s') . ' - ' . $_SERVER['REQUEST_URI'] . "\n", FILE_APPEND);
+header('X-Debug-Path: ' . $_SERVER['REQUEST_URI']);
 
 // compression
 $compressionHeaderMap = [
