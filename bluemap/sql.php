@@ -132,7 +132,7 @@ if ($path === "") {
 }
 
 // root => index.html
-if ($path === "/") {
+if ($path === "/" || $path === "/maps/" || $path === "/maps") {
     header("Content-Type: text/html");
     echo file_get_contents("/var/www/bluemap/index.html");
     exit;
