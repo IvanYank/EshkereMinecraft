@@ -76,7 +76,7 @@ services:
     command: >
       sh -c "
       docker-php-ext-install pdo pdo_mysql &&
-      php-fpm
+      php-fpm -F
       "
   gateway:
     build:
