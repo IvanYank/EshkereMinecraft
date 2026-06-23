@@ -14,6 +14,7 @@ $database = getenv('BLUEMAP_DB_NAME') ?: 'bluemap';
 $sql->exec("SET NAMES utf8mb4");
 $sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 $sql->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+$sql->exec("SET SESSION sql_mode = ''");
 // compression
 $compressionHeaderMap = [
     "bluemap:none" => null,
