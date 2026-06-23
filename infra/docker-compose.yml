@@ -58,20 +58,23 @@ services:
       - yea_network
 
   bluemap:
-    build:
-      context: ../bluemap # Путь к папке с Dockerfile и sql.php
-      dockerfile: Dockerfile
+    image: php:7.4-fpm-alpine
     container_name: yea_bluemap
+    volumes:
+      # Монтируем папку с файлами BlueMap внутрь контейнера
+      - ../bluemap:/var/www/bluemap
+    env_file:
+      - ./.env
     environment:
-      - BLUEMAP_DB_DRIVER=mysql
-      - BLUEMAP_DB_HOST=92.63.189.48
-      - BLUEMAP_DB_PORT=3310
-      - BLUEMAP_DB_USER=bluemap
-      - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD} # Не забудьте добавить в .env
-      - BLUEMAP_DB_NAME=bluemap
+      - BLUEMAP_DB_DRIVER=${BLUEMAP_DB_DRIVER:-mysql}
+      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
+      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT:-3310}
+      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
+      - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
+      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
     networks:
       - yea_network
-    restart: unless-stopped
+    command: php-fpm -F
   gateway:
     build:
       context: ../gateway
