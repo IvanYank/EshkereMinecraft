@@ -216,37 +216,46 @@ if (startsWith($path, "/maps/")) {
 
     // provide meta-files
     $storage = issetOrElse($metaFileKeys[$mapPath], null);
-    if ($storage === null && startsWith($mapPath, "assets/"))
-        $storage = "bluemap:asset/".substr($mapPath, strlen("assets/"));
+    
+    // ИСПРАВЛЕНИЕ: Проверяем полный путь относительно /maps/, а не только остаток
+    if ($storage === null) {
+        // Восстанавливаем полный путь: mapId + "/" + mapPath
+        // Например: "assets" + "/" + "index.js" -> "assets/index.js"
+        $fullRelativePath = $mapId . "/" . $mapPath;
+        
+        if (startsWith($fullRelativePath, "assets/")) {
+            // Отрезаем "assets/" и добавляем префикс БД
+            $storage = "bluemap:asset/" . substr($fullRelativePath, strlen("assets/"));
+        }
+    }
 
     if ($storage !== null) {
         try {
             $statement = $sql->prepare("
-                SELECT d.data, c.key
-                FROM bluemap_item_storage_data d
-                INNER JOIN bluemap_map m
-                 ON d.map = m.id
-                INNER JOIN bluemap_item_storage s
-                 ON d.storage = s.id
-                INNER JOIN bluemap_compression c
-                 ON d.compression = c.id
-                WHERE m.map_id = :map_id
-                 AND s.key = :storage
+            SELECT d.data, c.key
+            FROM bluemap_item_storage_data d
+            INNER JOIN bluemap_map m
+            ON d.map = m.id
+            INNER JOIN bluemap_item_storage s
+            ON d.storage = s.id
+            INNER JOIN bluemap_compression c
+            ON d.compression = c.id
+            WHERE m.map_id = :map_id
+            AND s.key = :storage
             ");
             $statement->bindParam( ':map_id', $mapId, PDO::PARAM_STR );
             $statement->bindParam( ':storage', $storage, PDO::PARAM_STR );
             $statement->setFetchMode(PDO::FETCH_ASSOC);
             $statement->execute();
-
+            
             if ($line = $statement->fetch()) {
                 header("Cache-Control: public,max-age=86400");
-                header("Content-Type: ".getMimeType($mapPath));
+                header("Content-Type: ".getMimeType($mapPath)); // Используем mapPath для определения MIME по расширению
                 compressionHeader($line["key"]);
-
                 send($line["data"]);
                 exit;
             }
-        } catch (PDOException $e) { 
+        } catch (PDOException $e) {
             error_log($e->getMessage(), 0);
             error(500, "Failed to fetch data");
         }
