@@ -11,13 +11,9 @@ $database = getenv('BLUEMAP_DB_NAME') ?: 'bluemap';
 
 // !!! END - DONT CHANGE ANYTHING AFTER THIS LINE !!!
 
-// Детальное логирование для отладки players
-file_put_contents('/tmp/sql_debug.log', 'REQUEST_URI: ' . $_SERVER['REQUEST_URI'] . "\n", FILE_APPEND);
-file_put_contents('/tmp/sql_debug.log', 'SCRIPT_NAME: ' . $_SERVER['SCRIPT_NAME'] . "\n", FILE_APPEND);
-file_put_contents('/tmp/sql_debug.log', 'PHP_SELF: ' . $_SERVER['PHP_SELF'] . "\n", FILE_APPEND);
-file_put_contents('/tmp/sql_debug.log', 'REQUEST_METHOD: ' . $_SERVER['REQUEST_METHOD'] . "\n", FILE_APPEND);
-file_put_contents('/tmp/sql_debug.log', 'QUERY_STRING: ' . ($_SERVER['QUERY_STRING'] ?? 'none') . "\n", FILE_APPEND);
-file_put_contents('/tmp/sql_debug.log', '---' . "\n", FILE_APPEND);
+$sql->exec("SET NAMES utf8mb4");
+$sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+$sql->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 // compression
 $compressionHeaderMap = [
     "bluemap:none" => null,
@@ -148,8 +144,6 @@ if (startsWith($path, "/maps/")) {
     $pathParts = explode("/", substr($path, strlen("/maps/")), 2);
     $mapId = $pathParts[0];
     $mapPath = explode("?", $pathParts[1], 2)[0];
-    file_put_contents('/tmp/sql_debug.log', 'mapPath: ' . $mapPath . "\n", FILE_APPEND);
-    file_put_contents('/tmp/sql_debug.log', 'storage: ' . ($storage ?? 'null') . "\n", FILE_APPEND);
     if (isset($pathParts[1])) {
         $mapPath = explode("?", $pathParts[1], 2)[0];
     } else {
