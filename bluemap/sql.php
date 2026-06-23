@@ -10,7 +10,8 @@ $password = getenv('BLUEMAP_DB_PASSWORD') ?: '';
 $database = getenv('BLUEMAP_DB_NAME') ?: 'bluemap';
 
 // !!! END - DONT CHANGE ANYTHING AFTER THIS LINE !!!
-
+error_log("Request URI: " . $_SERVER['REQUEST_URI']);
+error_log("Path: " . $path);
 // compression
 $compressionHeaderMap = [
     "bluemap:none" => null,
