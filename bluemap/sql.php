@@ -134,7 +134,7 @@ if ($path === "") {
 // root => index.html
 if ($path === "/") {
     header("Content-Type: text/html");
-    echo file_get_contents("index.html");
+    echo file_get_contents("/var/www/bluemap/index.html");
     exit;
 }
 
