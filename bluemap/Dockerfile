@@ -5,7 +5,7 @@ RUN docker-php-ext-install pdo_mysql
 
 # Включаем mod_rewrite
 RUN a2enmod rewrite
-RUN a2dismod deflate
+RUN a2dismod -f deflate
 # Копируем файлы
 COPY . /var/www/html/
 
