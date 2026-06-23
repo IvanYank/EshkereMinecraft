@@ -170,12 +170,12 @@ if (startsWith($path, "/maps/")) {
         try {
             $statement = $sql->prepare("
                 SELECT d.data, c.key
-                FROM bluemap.bluemap_grid_storage_data d
-                INNER JOIN bluemap.bluemap_map m
+                FROM bluemap_grid_storage_data d
+                INNER JOIN bluemap_map m
                  ON d.map = m.id
-                INNER JOIN bluemap.bluemap_grid_storage s
+                INNER JOIN bluemap_grid_storage s
                  ON d.storage = s.id
-                INNER JOIN bluemap.bluemap_compression c
+                INNER JOIN bluemap_compression c
                  ON d.compression = c.id
                 WHERE m.map_id = :map_id
                  AND s.key = :storage
@@ -223,12 +223,12 @@ if (startsWith($path, "/maps/")) {
         try {
             $statement = $sql->prepare("
                 SELECT d.data, c.key
-                FROM bluemap.bluemap_item_storage_data d
-                INNER JOIN bluemap.bluemap_map m
+                FROM bluemap_item_storage_data d
+                INNER JOIN bluemap_map m
                  ON d.map = m.id
-                INNER JOIN bluemap.bluemap_item_storage s
+                INNER JOIN bluemap_item_storage s
                  ON d.storage = s.id
-                INNER JOIN bluemap.bluemap_compression c
+                INNER JOIN bluemap_compression c
                  ON d.compression = c.id
                 WHERE m.map_id = :map_id
                  AND s.key = :storage
