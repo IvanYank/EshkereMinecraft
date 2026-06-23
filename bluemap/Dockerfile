@@ -9,8 +9,8 @@ RUN a2enmod rewrite
 # Копируем файлы
 COPY . /var/www/html/
 
-# Создаём симлинк maps -> .
-RUN ln -s . /var/www/html/maps
+# Удаляем существующий maps (если есть) и создаём симлинк
+RUN rm -rf /var/www/html/maps && ln -s . /var/www/html/maps
 
 # Настраиваем Apache через .htaccess
 RUN echo '<Directory /var/www/html/>\n\
