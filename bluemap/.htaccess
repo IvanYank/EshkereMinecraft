@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Если запрос к существующему файлу или папке - отдаём его
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Все остальные запросы к /maps/ направляем на sql.php
+RewriteRule ^maps/.*$ /sql.php [L]

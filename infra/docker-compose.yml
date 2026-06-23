@@ -58,22 +58,20 @@ services:
       - yea_network
 
   bluemap:
-    image: php:7.4-fpm
+    build:
+      context: ../bluemap
+      dockerfile: Dockerfile
     container_name: yea_bluemap
-    volumes:
-      - ../bluemap:/var/www/bluemap
-    env_file:
-      - ./.env
     environment:
       - BLUEMAP_DB_DRIVER=${BLUEMAP_DB_DRIVER:-mysql}
-      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST:-92.63.189.48}
-      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT:-3310}
-      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER:-bluemap}
+      - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
+      - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT}
+      - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
       - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
-      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME:-bluemap}
+      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
     networks:
       - yea_network
-    command: sh -c "docker-php-ext-install pdo_mysql && php-fpm -F"
+    restart: unless-stopped
 
   gateway:
     build:
