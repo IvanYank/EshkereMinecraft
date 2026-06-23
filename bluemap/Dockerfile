@@ -10,15 +10,12 @@ RUN apk add --no-cache \
 # Копирование конфигурации Nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# Копирование файлов BlueMap
-COPY . /var/www/bluemap/
-
-# Настройка прав доступа
-RUN chown -R www-data:www-data /var/www/bluemap \
-    && mkdir -p /run/nginx
+# Файлы копируются через volume в docker-compose, 
+# но можно оставить пустую директорию для безопасности
+RUN mkdir -p /var/www/bluemap
 
 # Открываем порт 80
 EXPOSE 80
 
-# Запуск Nginx и PHP-FPM
+# Команда запуска: сначала php-fpm, потом nginx в foreground
 CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
