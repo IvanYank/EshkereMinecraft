@@ -155,6 +155,8 @@ if (startsWith($path, "/maps/")) {
     // Initialize PDO
     try {
         $sql = new PDO("$driver:host=$hostname;port=$port;dbname=$database", $username, $password);
+        $sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        $sql->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, true);
         $sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e ) { 
         error_log($e->getMessage(), 0); // Logs the detailed error message
