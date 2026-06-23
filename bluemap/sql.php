@@ -132,8 +132,10 @@ if ($path === "") {
 }
 
 // root => index.html
+// Обрабатываем корень сайта и корень папки maps
 if ($path === "/" || $path === "/maps/" || $path === "/maps") {
     header("Content-Type: text/html");
+    // Используем абсолютный путь для надежности в Docker
     echo file_get_contents("/var/www/bluemap/index.html");
     exit;
 }
