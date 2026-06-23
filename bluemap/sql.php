@@ -144,7 +144,18 @@ if (startsWith($path, "/maps/")) {
     $pathParts = explode("/", substr($path, strlen("/maps/")), 2);
     $mapId = $pathParts[0];
     $mapPath = explode("?", $pathParts[1], 2)[0];
+    if (isset($pathParts[1])) {
+        $mapPath = explode("?", $pathParts[1], 2)[0];
+    } else {
+        $mapPath = "";
+    }
 
+    // Если запрос к корню карты (например, /maps/world или /maps/world/) – отдаём index.html
+    if ($mapPath === "" || $mapPath === "/") {
+        header("Content-Type: text/html");
+        readfile(__DIR__ . "/index.html");
+        exit;
+    }
     // Initialize PDO
     try {
         $sql = new PDO("$driver:host=$hostname;port=$port;dbname=$database", $username, $password);
