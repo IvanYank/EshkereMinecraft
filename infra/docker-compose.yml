@@ -57,28 +57,22 @@ services:
     networks:
       - yea_network
 
-  bluemap_php:
-    image: php:7.4-fpm-alpine
-    container_name: bluemap_php
-    restart: unless-stopped
-    volumes:
-      - ../bluemap:/var/www/bluemap
+  bluemap:
+    build:
+      context: ../bluemap
+      dockerfile: Dockerfile
+    container_name: yea_bluemap
     environment:
+      # Переменные для sql.php (берутся из .env)
+      - BLUEMAP_DB_DRIVER=${BLUEMAP_DB_DRIVER:-mysql}
       - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
       - BLUEMAP_DB_PORT=${BLUEMAP_DB_PORT}
       - BLUEMAP_DB_USER=${BLUEMAP_DB_USER}
-      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
       - BLUEMAP_DB_PASSWORD=${BLUEMAP_DB_PASSWORD}
-      - BLUEMAP_DB_DRIVER=${BLUEMAP_DB_DRIVER}
+      - BLUEMAP_DB_NAME=${BLUEMAP_DB_NAME}
     networks:
       - yea_network
-    command: >
-      sh -c "
-        apk add --no-cache postgresql-dev &&
-        docker-php-ext-install pdo_mysql pdo_pgsql &&
-        php-fpm -F
-      "
-
+    restart: unless-stopped
   gateway:
     build:
       context: ../gateway
@@ -92,11 +86,9 @@ services:
       - media_volume:/app/media
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /opt/data:/app/installer:ro
-      - ../bluemap:/var/www/bluemap
     depends_on:
       - backend
       - frontend
-      - bluemap_php
     networks:
       - yea_network
 
