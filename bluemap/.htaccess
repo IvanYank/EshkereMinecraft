@@ -1,10 +1,12 @@
 RewriteEngine On
 
 <IfModule mod_deflate.c>
-    # Отключаем сжатие для всех JSON-запросов к BlueMap
-    SetEnvIf Request_URI "\.json$" no-gzip=1
-    SetEnvIf Request_URI "/live/players\.json$" no-gzip=1
-    SetEnvIf Request_URI "/live/markers\.json$" no-gzip=1
+    <FilesMatch "\.(json)$">
+        SetEnv no-gzip 1
+    </FilesMatch>
+    <FilesMatch "players\.json$">
+        SetEnv no-gzip 1
+    </FilesMatch>
 </IfModule>
 # Если запрос к существующему файлу или папке (через симлинк) - отдаём его
 RewriteCond %{REQUEST_FILENAME} -f [OR]
