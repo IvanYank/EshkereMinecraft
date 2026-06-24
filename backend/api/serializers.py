@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.conf import settings
 from django.utils import timezone
 from events.models import Event, News
-from tickets.models import Ticket, TicketStatus
+from tickets.models import Ticket, TicketStatus, TicketComment
 
 
 class EventSerializer(serializers.ModelSerializer):
