@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ticket
+from .models import Ticket, TicketStatus
 
 
 @admin.register(Ticket)
@@ -32,11 +32,11 @@ class TicketAdmin(admin.ModelAdmin):
     actions = ['mark_as_approved', 'mark_as_rejected']
     
     def mark_as_approved(self, request, queryset):
-        updated = queryset.update(status=Ticket.Status.APPROVED)
+        updated = queryset.update(status=TicketStatus.APPROVED)
         self.message_user(request, f'Отмечено как "Принято": {updated} тикетов')
     mark_as_approved.short_description = 'Отметить как "Принято"'
     
     def mark_as_rejected(self, request, queryset):
-        updated = queryset.update(status=Ticket.Status.REJECTED)
+        updated = queryset.update(status=TicketStatus.REJECTED)
         self.message_user(request, f'Отмечено как "Отклонено": {updated} тикетов')
     mark_as_rejected.short_description = 'Отметить как "Отклонено"'

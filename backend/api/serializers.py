@@ -101,8 +101,7 @@ class TicketCreateSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         user = self.context['request'].user
-        return Ticket.objects.create(
+        return Ticket.create_ticket(
             author=user,
-            text=validated_data['text'],
-            status=TicketStatus.PROCESSING  # Автоматический статус
+            text=validated_data['text']
         )
