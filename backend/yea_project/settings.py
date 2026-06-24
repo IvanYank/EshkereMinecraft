@@ -32,9 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'events',
-    'tickets',
     'api',
     'drf_yasg',
+    'tickets.apps.TicketsConfig',
     'users.apps.UsersConfig',
 ]
 
