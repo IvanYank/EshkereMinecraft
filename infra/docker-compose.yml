@@ -63,7 +63,7 @@ services:
       dockerfile: Dockerfile
     container_name: yea_bluemap
     ports:
-      - "8100:80"  # <-- ДОБАВЛЯЕМ ЭТУ СТРОКУ
+      - "8100:80"
     environment:
       - BLUEMAP_DB_DRIVER=${BLUEMAP_DB_DRIVER:-mysql}
       - BLUEMAP_DB_HOST=${BLUEMAP_DB_HOST}
