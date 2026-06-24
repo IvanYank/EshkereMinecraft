@@ -1,15 +1,20 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import action
+from django.shortcuts import get_object_or_404
 
 from events.models import Event, News
-from tickets.models import Ticket
+from tickets.models import Ticket, TicketComment
 from .serializers import (
-    EventSerializer, 
-    NewsSerializer, 
+    EventSerializer,
+    NewsSerializer,
     TicketListSerializer,
     TicketDetailSerializer,
-    TicketCreateSerializer
+    TicketDetailWithCommentsSerializer,
+    TicketCreateSerializer,
+    TicketCommentSerializer,
+    TicketCommentCreateSerializer
 )
 
 
@@ -97,3 +102,36 @@ class TicketViewSet(
         ticket = self.get_object()  # Автоматическая проверка через get_queryset
         serializer = self.get_serializer(ticket)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def comment(self, request, pk=None):
+        """
+        POST /api/tickets/{id}/comment/
+        Добавить комментарий к тикету.
+        Только автор тикета может комментировать.
+        """
+        ticket = self.get_object()
+        
+        # Проверка: только автор может комментировать
+        if ticket.author != request.user:
+            return Response(
+                {'error': 'Вы не можете комментировать этот тикет'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        serializer = TicketCommentCreateSerializer(
+            data=request.data,
+            context={
+                'request': request,
+                'ticket': ticket
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+        comment = serializer.save()
+        
+        # Возвращаем комментарий с данными автора
+        comment_serializer = TicketCommentSerializer(comment)
+        return Response(
+            comment_serializer.data,
+            status=status.HTTP_201_CREATED
+        )
