@@ -119,6 +119,11 @@ class TicketViewSet(
                 status=status.HTTP_403_FORBIDDEN
             )
         
+        if ticket.status in [TicketStatus.APPROVED, TicketStatus.REJECTED]:
+            return Response(
+                {'error': 'Нельзя комментировать тикет со статусом "Принято" или "Отклонено"'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         serializer = TicketCommentCreateSerializer(
             data=request.data,
             context={
