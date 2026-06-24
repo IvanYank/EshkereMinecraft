@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.conf import settings
 from django.utils import timezone
 from events.models import Event, News
-from tickets.models import Ticket
+from tickets.models import Ticket, TicketStatus
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -104,5 +104,5 @@ class TicketCreateSerializer(serializers.ModelSerializer):
         return Ticket.objects.create(
             author=user,
             text=validated_data['text'],
-            status=Ticket.Status.PROCESSING  # Автоматический статус
+            status=TicketStatus.PROCESSING  # Автоматический статус
         )
