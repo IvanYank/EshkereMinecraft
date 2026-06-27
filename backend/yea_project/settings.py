@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'events',
     'api',
     'drf_yasg',
+    'tickets.apps.TicketsConfig',
     'users.apps.UsersConfig',
 ]
 
@@ -176,3 +177,5 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 USE_ETAGS = True
 SECURE_COOKIE = True
+
+TICKETS_PER_DAY_LIMIT = 999

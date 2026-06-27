@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Если запрос к существующему файлу или папке (через симлинк) - отдаём его
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Если запрос к /maps/assets/ - отдаём статику напрямую
+RewriteRule ^maps/assets/ - [L]
+
+# Все остальные запросы направляем на sql.php
+RewriteRule ^ /sql.php [L]

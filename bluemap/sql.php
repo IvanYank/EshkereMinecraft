@@ -2,19 +2,15 @@
 
 // !!! SET YOUR SQL-CONNECTION SETTINGS HERE: !!!
 
-$driver   = 'mysql';
-$hostname = getenv('BLUEMAP_DB_HOST') ?: '127.0.0.1';
-$port     = getenv('BLUEMAP_DB_PORT') ?: 3306;
-$username = getenv('BLUEMAP_DB_USER') ?: 'root';
+$driver   = getenv('BLUEMAP_DB_DRIVER') ?: 'mysql';
+$hostname = getenv('BLUEMAP_DB_HOST') ?: '92.63.189.48';
+$port     = getenv('BLUEMAP_DB_PORT') ?: 3310;
+$username = getenv('BLUEMAP_DB_USER') ?: 'bluemap';
 $password = getenv('BLUEMAP_DB_PASSWORD') ?: '';
 $database = getenv('BLUEMAP_DB_NAME') ?: 'bluemap';
 
 // !!! END - DONT CHANGE ANYTHING AFTER THIS LINE !!!
 
-
-
-
-// compression
 $compressionHeaderMap = [
     "bluemap:none" => null,
     "bluemap:gzip" => "gzip",
@@ -144,10 +140,23 @@ if (startsWith($path, "/maps/")) {
     $pathParts = explode("/", substr($path, strlen("/maps/")), 2);
     $mapId = $pathParts[0];
     $mapPath = explode("?", $pathParts[1], 2)[0];
+    if (isset($pathParts[1])) {
+        $mapPath = explode("?", $pathParts[1], 2)[0];
+    } else {
+        $mapPath = "";
+    }
 
+    // Если запрос к корню карты (например, /maps/world или /maps/world/) – отдаём index.html
+    if ($mapPath === "" || $mapPath === "/") {
+        header("Content-Type: text/html");
+        readfile(__DIR__ . "/index.html");
+        exit;
+    }
     // Initialize PDO
     try {
         $sql = new PDO("$driver:host=$hostname;port=$port;dbname=$database", $username, $password);
+        $sql->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        $sql->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, true);
         $sql->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e ) { 
         error_log($e->getMessage(), 0); // Logs the detailed error message
