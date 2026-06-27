@@ -7,7 +7,7 @@ export default function MapPage() {
         className={styles.map}
         title="Карта мира"
         loading="lazy"
-        src="http://92.63.189.48:8100/"
+        src="https://cubethrone.fun/maps/"
       >
       </iframe>
     </div>
