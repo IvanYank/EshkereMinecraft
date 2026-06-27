@@ -139,7 +139,13 @@ export default function Home() {
           }
         })
 
-      const count = (slidesPerView - (users.length % slidesPerView)) % slidesPerView;
+      let count;
+
+      if (users.length === 0) {
+        count = slidesPerView;
+      } else {
+        count = (slidesPerView - (users.length % slidesPerView)) % slidesPerView;
+      }
 
       for (let i = 0; i < count; i++) {
         users.push({

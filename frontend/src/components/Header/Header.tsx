@@ -165,12 +165,24 @@ export default function Header() {
                 События
               </button>
             </li>
-            <li className={styles.navigationElement}>
-              <button type="button"
-                className={styles.link}
-                onClick={() => { window.location.href = "https://cubethrone.fun/installer/CubeThrone.exe" }}>
-                Лаунчер
-              </button>
+            <li className={classNames(styles.navigationElement, styles.navigationElementExluded)}>
+              <div className={styles.person}>
+                <button type="button" popoverTarget="download-popover" className={classNames(styles.link, styles.download)}>
+                  Скачать
+                </button>
+                <div id="download-popover" popover="auto" className={classNames(styles.downloadLink, styles.personPopover)}>
+                  <button type="button"
+                    className={styles.link}
+                    onClick={() => { window.location.href = "https://cubethrone.fun/installer/CubeThrone.exe" }}>
+                    Установщик
+                  </button>
+                  <button type="button"
+                    className={styles.link}
+                    onClick={() => { window.location.href = "https://cubethrone.fun/installer/Cubethrone1.0.zip" }}>
+                    Сборка .zip
+                  </button>
+                </div>
+              </div>
             </li>
             <li className={styles.navigationElement}>
               <Link className={styles.link} to="/map">Карта</Link>

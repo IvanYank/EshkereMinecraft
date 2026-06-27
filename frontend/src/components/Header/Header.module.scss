@@ -238,6 +238,17 @@
   }
 }
 
+.download {
+  anchor-name: --download;
+
+  &Link {
+    position-anchor: --download;
+    top: anchor(bottom);
+    left: anchor(center);
+    translate: -50% 0;
+  }
+}
+
 @media(max-width: 1200px) {
   .personNickname {
     max-width: 151px;
@@ -311,6 +322,10 @@
 
     &Element {
       margin: 0 0 16px 0;
+
+      &Exluded{
+        display: none;
+      }
     }
 
     &Active {
