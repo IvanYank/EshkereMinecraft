@@ -49,12 +49,12 @@ class TicketViewSet(
     """
     
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
-        """
-        Возвращает только тикеты текущего пользователя.
-        """
-        return Ticket.objects.filter(author=self.request.user)
+        try:
+            return Ticket.objects.filter(author=self.request.user)
+        except TypeError:
+            return Ticket.objects.none()
     
     def get_serializer_class(self):
         """
