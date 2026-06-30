@@ -1,7 +1,7 @@
 {
   "version": "5.16",
   "useCookies": true,
-  "defaultToFlatView": true,
+  "defaultToFlatView": false,
   "resolutionDefault": 2.0,
   "minZoomDistance": 5,
   "maxZoomDistance": 100000,
