@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 
 from events.models import Event, News
 from tickets.models import Ticket, TicketComment
+from users.models import SiteUser
 from .serializers import (
     EventSerializer,
     NewsSerializer,
@@ -51,10 +52,7 @@ class TicketViewSet(
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        try:
-            return Ticket.objects.filter(author=self.request.user)
-        except TypeError:
-            return Ticket.objects.none()
+        return Ticket.objects.filter(author_id=self.request.user.id)
     
     def get_serializer_class(self):
         """
