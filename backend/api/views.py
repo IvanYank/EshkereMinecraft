@@ -1,12 +1,13 @@
 from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 
 from events.models import Event, News
-from tickets.models import Ticket, TicketComment
+from tickets.models import Ticket, TicketComment, TicketStatus
 from users.models import SiteUser
+from users.jwt import get_user_from_token
 from .serializers import (
     EventSerializer,
     NewsSerializer,
@@ -20,10 +21,6 @@ from .serializers import (
 
 
 class EventViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    ViewSet только для чтения (GET запросы).
-    Доступен list (список всех событий) и retrieve (одно событие по id).
-    """
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     permission_classes = [AllowAny]
@@ -41,100 +38,101 @@ class TicketViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
 ):
-    """
-    ViewSet для работы с тикетами.
-    Доступные действия:
-    - POST /api/tickets/ - создание тикета
-    - GET /api/tickets/ - список тикетов пользователя
-    - GET /api/tickets/{id}/ - детали тикета (только свой)
-    """
-    
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+
+    def _get_user_from_request(self, request):
+        """Извлекает пользователя из Bearer-токена в заголовке."""
+        header = request.headers.get('Authorization', '')
+        if not header.startswith('Bearer '):
+            return None, Response(
+                {'error': 'Token required'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        user = get_user_from_token(header[7:])
+        if not user:
+            return None, Response(
+                {'error': 'Invalid token'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        return user, None
 
     def get_queryset(self):
-        return Ticket.objects.filter(author_id=self.request.user.id)
-    
+        user = self.request.user
+        if hasattr(user, 'id'):
+            return Ticket.objects.filter(author=user)
+        return Ticket.objects.none()
+
     def get_serializer_class(self):
-        """
-        Выбор сериализатора в зависимости от действия.
-        """
         if self.action == 'create':
             return TicketCreateSerializer
         elif self.action == 'list':
             return TicketListSerializer
         return TicketDetailSerializer
-    
+
     def list(self, request, *args, **kwargs):
-        """
-        GET /api/tickets/
-        Получение списка тикетов текущего пользователя.
-        """
-        queryset = self.get_queryset()
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
+        
+        queryset = Ticket.objects.filter(author=user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-    
+
     def create(self, request, *args, **kwargs):
-        """
-        POST /api/tickets/
-        Создание нового тикета.
-        """
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
+
         serializer = self.get_serializer(
             data=request.data,
-            context={'request': request}
+            context={'request': request, 'user': user}
         )
         serializer.is_valid(raise_exception=True)
-        ticket = serializer.save()
         
-        # Возвращаем детальную информацию о созданном тикете
+        ticket = Ticket.create_ticket(author=user, text=serializer.validated_data['text'])
         detail_serializer = TicketDetailSerializer(ticket)
-        return Response(
-            detail_serializer.data,
-            status=status.HTTP_201_CREATED
-        )
-    
+        return Response(detail_serializer.data, status=status.HTTP_201_CREATED)
+
     def retrieve(self, request, pk=None, *args, **kwargs):
-        """
-        GET /api/tickets/{id}/
-        Получение конкретного тикета (только если он принадлежит пользователю).
-        """
-        ticket = self.get_object()  # Автоматическая проверка через get_queryset
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
+
+        try:
+            ticket = Ticket.objects.get(id=pk, author=user)
+        except Ticket.DoesNotExist:
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = self.get_serializer(ticket)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def comment(self, request, pk=None):
-        """
-        POST /api/tickets/{id}/comment/
-        Добавить комментарий к тикету.
-        Только автор тикета может комментировать.
-        """
-        ticket = self.get_object()
-        
-        # Проверка: только автор может комментировать
-        if ticket.author != request.user:
-            return Response(
-                {'error': 'Вы не можете комментировать этот тикет'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
+        user, error_response = self._get_user_from_request(request)
+        if error_response:
+            return error_response
+
+        try:
+            ticket = Ticket.objects.get(id=pk, author=user)
+        except Ticket.DoesNotExist:
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
         if ticket.status in [TicketStatus.APPROVED, TicketStatus.REJECTED]:
             return Response(
                 {'error': 'Нельзя комментировать тикет со статусом "Принято" или "Отклонено"'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         serializer = TicketCommentCreateSerializer(
             data=request.data,
-            context={
-                'request': request,
-                'ticket': ticket
-            }
+            context={'request': request, 'ticket': ticket}
         )
         serializer.is_valid(raise_exception=True)
-        comment = serializer.save()
-        
-        # Возвращаем комментарий с данными автора
-        comment_serializer = TicketCommentSerializer(comment)
-        return Response(
-            comment_serializer.data,
-            status=status.HTTP_201_CREATED
+        comment = TicketComment.create_comment(
+            ticket=ticket,
+            author=user,
+            text=serializer.validated_data['text']
         )
+
+        comment_serializer = TicketCommentSerializer(comment)
+        return Response(comment_serializer.data, status=status.HTTP_201_CREATED)
