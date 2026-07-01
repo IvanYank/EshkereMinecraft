@@ -67,6 +67,8 @@ class TicketViewSet(
             return TicketCreateSerializer
         elif self.action == 'list':
             return TicketListSerializer
+        elif self.action == 'retrieve':
+            return TicketDetailWithCommentsSerializer  # <-- ИСПРАВИТЬ
         return TicketDetailSerializer
 
     def list(self, request, *args, **kwargs):
