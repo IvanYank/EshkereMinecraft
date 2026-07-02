@@ -57,10 +57,13 @@ class TicketViewSet(
         return user, None
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Ticket.objects.none()
+            
         user = self.request.user
-        if hasattr(user, 'id'):
-            return Ticket.objects.filter(author=user)
-        return Ticket.objects.none()
+        if not user.is_authenticated:
+            return Ticket.objects.none()
+        return Ticket.objects.filter(author=user)
 
     def get_serializer_class(self):
         if self.action == 'create':
